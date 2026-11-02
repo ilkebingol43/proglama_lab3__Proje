@@ -30,3 +30,9 @@ app.MapControllerRoute(
 
 
 app.Run();
+// Proje başlarken veritabanında Admin yoksa oluştur
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    DbSeeder.SeedAdmin(context);
+}
