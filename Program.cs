@@ -1,4 +1,11 @@
+using Microsoft.EntityFrameworkCore;
+using Lab3_proje.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// SQLite Veritabanı Bağlantısı
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
