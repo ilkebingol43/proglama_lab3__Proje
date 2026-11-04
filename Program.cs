@@ -34,6 +34,8 @@ app.UseRouting();
 app.UseAuthentication(); //yetki kontrol  verilerin hangi kullanıcıdan geldiğini kontrol eder 
 app.UseAuthorization();  // 2.kontrol kapısı bu adımdan sonra gelen veriler ile o kişinin tipine konrol edecek ROLE_Student
 
+app.UseStaticFiles();
+
 app.MapStaticAssets();
 
 app.MapControllerRoute(
