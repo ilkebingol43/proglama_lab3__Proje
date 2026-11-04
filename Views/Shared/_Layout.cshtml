@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Staj Yönetim Sistemi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-
     <link href="~/css/custom-theme.css" rel="stylesheet" />
+
+
+
+
 </head>
+    @* LAYOUT *@
 <body class="d-flex flex-column min-vh-100">
     
     <header>
@@ -21,21 +24,22 @@
         </nav>
     </header>
 
+
     <main role="main" class="container mt-4 flex-grow-1 d-flex flex-column justify-content-center">
         @RenderBody()
     </main>
 
 
-
+     @* FOOTER *@
     <footer class="bg-white border-top py-3 mt-auto shadow-sm">
         <div class="container d-flex align-items-center flex-wrap" style="color: #212529;">
             
-            <!-- Sol Taraf: Telif Yazısı ve Yumuşak Sağ Çizgi -->
+            
             <div class="small pe-4 border-end" style="border-color: #e9ecef !important; border-right-width: 2px !important;">
                 &copy; 2026 - Staj Evrak Doğrulama Sistemi
             </div>
             
-            <!-- Sağ Taraf: İsimler (ms-auto ile itilip, me-5 ile sola çekildi, gap-5 ile aralar açıldı) -->
+            
             <div class="d-flex gap-5 text-start ms-auto me-5 mt-3 mt-md-0">
                 <div>
                     <div class="fw-bold" style="font-size: 0.9rem;">Mahsum Kaçmaz</div>
@@ -44,12 +48,12 @@
                 
                 <div>
                     <div class="fw-bold" style="font-size: 0.9rem;">İlke Bingöl</div>
-                    <div class="text-secondary" style="font-size: 0.75rem;">240229086</div>
+                    <div class="text-secondary" style="font-size: 0.75rem;">240229039</div>
                 </div>
                 
                 <div>
                     <div class="fw-bold" style="font-size: 0.9rem;">Osmancan Uslu</div>
-                    <div class="text-secondary" style="font-size: 0.75rem;">240229066</div>
+                    <div class="text-secondary" style="font-size: 0.75rem;">240229060</div>
                 </div>
             </div>
             
