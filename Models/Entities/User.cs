@@ -29,7 +29,7 @@ namespace Lab3_proje.Models.Entities
         // Şifreyi BCrypt ile güvenli hash'e çeviren metot
         public void SifreyiHashle(string password)
         {
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password); // şifreyi hashladik
         }
         // İsimdeki fazla boşlukları temizleyen metot
         public string BoslukTemizle(string name)
