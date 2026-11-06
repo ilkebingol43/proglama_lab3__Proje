@@ -23,8 +23,11 @@ namespace Lab3_proje.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("DosyaAdı")
+                    b.Property<string>("DosyaAdi")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DosyaUzantisi")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DosyaYolu")
@@ -36,6 +39,9 @@ namespace Lab3_proje.Migrations
 
                     b.Property<string>("SecilenHaftalikGunler")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StajBaslangicTarihi")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("StajBitisTarihi")
@@ -52,9 +58,6 @@ namespace Lab3_proje.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("raporMesajı")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("stajBaslangıcTarihi")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
