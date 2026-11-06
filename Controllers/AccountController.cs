@@ -23,14 +23,18 @@ namespace Lab3_proje.Controllers
             _context = context;
         }
 
-        // 1. EKRANI AÇAR: Kullanıcı /Account/Register adresine girdiğinde boş kayıt formunu gösterir
+        // =============================================================
+        // KAYIT İŞLEMLERİ (Register)
+        // =============================================================
+
+        // 1. Boş Kayıt Formunu Gösterir
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
-        // 2. KAYDETMEK İÇİN ÇALIŞIR: Kullanıcı formu doldurup "Kayıt Ol" butonuna bastığında burası çalışır
+        // 2. Kayıt Formunu Gönderir ve Veritabanına Yazar
         [HttpPost]
         public IActionResult Register(User model)
         {
@@ -75,41 +79,57 @@ namespace Lab3_proje.Controllers
             // Yeni kaydolan herkes Öğrenci rolünü alır
             model.Role = "ROLE_STUDENT";
 
-            // Veritabanına ekle ve kaydet
             _context.Users.Add(model);
             _context.SaveChanges();
 
-            // Kayıt başarılı! Kullanıcıyı Giriş Yap (Login) sayfasına yönlendir
             return RedirectToAction("Login");
         }
 
-        // GİRİŞ EKRANI
+        // =============================================================
+        // ANA GİRİŞ SEÇİM EKRANI (İki Butonlu Sayfa)
+        // =============================================================
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
-        // GİRİŞ KONTROLÜ (5 Hatalı Giriş Kilidi ve Cookie Başlatma)
-        [HttpPost]
-        public async Task<IActionResult> Login(string kullaniciAdiVeyaEmail, string sifre)
+        // =============================================================
+        // ÖĞRENCİ GİRİŞ İŞLEMLERİ
+        // =============================================================
+        [HttpGet]
+        public IActionResult OgrenciLogin()
         {
-            var user = _context.Users.FirstOrDefault(u => u.UserName == kullaniciAdiVeyaEmail || u.Email == kullaniciAdiVeyaEmail);
+            return View(new LoginViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> OgrenciLogin(LoginViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Kullanıcı adı veya E-posta ile ara ve SADECE ROLE_STUDENT olanı bul
+            var user = _context.Users.FirstOrDefault(u =>
+                (u.UserName == model.UsernameOrEmail || u.Email == model.UsernameOrEmail)
+                && u.Role == "ROLE_STUDENT");
 
             if (user == null)
             {
-                ViewBag.Hata = "Kullanıcı adı / e-posta veya şifre hatalı!";
-                return View();
+                ViewBag.Hata = "Öğrenci kullanıcı adı / e-posta veya şifre hatalı!";
+                return View(model);
             }
 
-            // HESAP KİLİTLİ Mİ? (15 dakika kontrolü)
+            // Hesap kilitli mi kontrolü (15 dakika)
             if (user.KilitlendiMi)
             {
                 if (user.LockoutEndTime.HasValue && user.LockoutEndTime.Value > DateTime.Now)
                 {
                     var kalanDakika = (int)Math.Ceiling((user.LockoutEndTime.Value - DateTime.Now).TotalMinutes);
                     ViewBag.Hata = $"Hesabınız 5 hatalı giriş nedeniyle kilitlenmiştir! Lütfen {kalanDakika} dakika sonra tekrar deneyiniz.";
-                    return View();
+                    return View(model);
                 }
                 else
                 {
@@ -118,8 +138,8 @@ namespace Lab3_proje.Controllers
                 }
             }
 
-            // ŞİFRE DOĞRULAMA (BCrypt)
-            bool sifreDogruMu = BCrypt.Net.BCrypt.Verify(sifre, user.PasswordHash);
+            // Şifre doğrulama (BCrypt)
+            bool sifreDogruMu = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
 
             if (!sifreDogruMu)
             {
@@ -135,13 +155,14 @@ namespace Lab3_proje.Controllers
                     int kalanHak = 5 - user.FailedLoginAttempts;
                     ViewBag.Hata = $"Hatalı şifre! Kalan deneme hakkınız: {kalanHak}";
                 }
-                return View();
+                return View(model);
             }
 
-            // GİRİŞ BAŞARILI
+            // Giriş başarılı: Hataları sıfırla
             user.GirisSayisiSifirlama();
             _context.SaveChanges();
 
+            // Cookie ile oturum başlat
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -150,25 +171,102 @@ namespace Lab3_proje.Controllers
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var authProperties = new AuthenticationProperties
-            {
-                IsPersistent = true
-            };
-
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity),
-                authProperties);
-
-            if (user.Role == "ROLE_ADMIN")
-            {
-                return RedirectToAction("Index", "Admin");
-            }
+                new AuthenticationProperties { IsPersistent = true });
 
             return RedirectToAction("Index", "Student");
         }
 
-        // ÇIKIŞ YAP (Logout)
+        // =============================================================
+        // ADMIN GİRİŞ İŞLEMLERİ
+        // =============================================================
+        [HttpGet]
+        public IActionResult AdminLogin()
+        {
+            return View(new LoginViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AdminLogin(LoginViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Kullanıcı adı veya E-posta ile ara ve SADECE ROLE_ADMIN olanı bul
+            var user = _context.Users.FirstOrDefault(u =>
+                (u.UserName == model.UsernameOrEmail || u.Email == model.UsernameOrEmail)
+                && u.Role == "ROLE_ADMIN");
+
+            if (user == null)
+            {
+                ViewBag.Hata = "Admin bilgileri veya şifre hatalı!";
+                return View(model);
+            }
+
+            // Hesap kilitli mi kontrolü (15 dakika)
+            if (user.KilitlendiMi)
+            {
+                if (user.LockoutEndTime.HasValue && user.LockoutEndTime.Value > DateTime.Now)
+                {
+                    var kalanDakika = (int)Math.Ceiling((user.LockoutEndTime.Value - DateTime.Now).TotalMinutes);
+                    ViewBag.Hata = $"Hesabınız 5 hatalı giriş nedeniyle kilitlenmiştir! Lütfen {kalanDakika} dakika sonra tekrar deneyiniz.";
+                    return View(model);
+                }
+                else
+                {
+                    user.GirisSayisiSifirlama();
+                    _context.SaveChanges();
+                }
+            }
+
+            // Şifre doğrulama (BCrypt)
+            bool sifreDogruMu = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
+
+            if (!sifreDogruMu)
+            {
+                user.GirisLoglama();
+                _context.SaveChanges();
+
+                if (user.KilitlendiMi)
+                {
+                    ViewBag.Hata = "5 kez hatalı şifre girdiniz! Hesabınız 15 dakika süreyle kilitlendi.";
+                }
+                else
+                {
+                    int kalanHak = 5 - user.FailedLoginAttempts;
+                    ViewBag.Hata = $"Hatalı şifre! Kalan deneme hakkınız: {kalanHak}";
+                }
+                return View(model);
+            }
+
+            // Giriş başarılı: Hataları sıfırla
+            user.GirisSayisiSifirlama();
+            _context.SaveChanges();
+
+            // Cookie ile oturum başlat
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Role, user.Role)
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                new AuthenticationProperties { IsPersistent = true });
+
+            return RedirectToAction("Index", "Admin");
+        }
+
+        // =============================================================
+        // ÇIKIŞ YAP (Logout) & YETKİSİZ ERİŞİM (AccessDenied)
+        // =============================================================
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
@@ -176,33 +274,10 @@ namespace Lab3_proje.Controllers
             return RedirectToAction("Login");
         }
 
-        // 403 ERİŞİM ENGELLENDİ
         [HttpGet]
         public IActionResult AccessDenied()
         {
             return View();
         }
-
-
-
-        // Ogrenic login
-        [HttpGet]
-        public IActionResult OgrenciLogin()
-        {
-            return View(new OgrenciLoginViewModel());
-        }
-
-        [HttpPost]
-        public IActionResult OgrenciLogin(OgrenciLoginViewModel model)
-        {
-            if (!ModelState.IsValid)
-                return View(model);
-
-            // Öğrenci doğrulama buraya gelecek
-
-            return View(model);
-        }
-
     }
 }
-

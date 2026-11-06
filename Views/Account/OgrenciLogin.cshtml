@@ -1,4 +1,4 @@
-﻿@model Lab3_proje.Models.ViewModels.OgrenciLoginViewModel
+﻿@model Lab3_proje.Models.ViewModels.LoginViewModel
 
 @{
     ViewData["Title"] = "Öğrenci Girişi";
@@ -6,35 +6,43 @@
 }
 <link href="~/css/costumtheme.css" rel="stylesheet" />
 
-<!--kayıt ol linki-->
+<!-- Kayıt Ol Linki -->
 <div style="position: fixed; top: 16px; right: 40px; z-index: 1050;">
     <a href="/Account/Register" class="text-decoration-none fw-bold fs-5" style="color: #10B981;">Kayıt Ol</a>
 </div>
 
-<!--ana içerik-->
+<!-- Ana İçerik -->
 <div class="w-100 d-flex flex-column justify-content-center align-items-center" style="min-height: 60vh;">
 
     <h1 class="fw-bold text-dark mb-5" style="font-size: 6rem;">Öğrenci Girişi</h1>
 
-    <div class="shadow-lg p-5 rounded-4 bg-white" style="min-width: 420px;">
+    <div class="shadow-lg p-5 rounded-4 bg-white" style="min-width: 420px; max-width: 450px;">
+
+        <!-- Hata Mesajı Alanı -->
+        @if (ViewBag.Hata != null)
+        {
+            <div class="alert alert-danger text-center mb-4 rounded-3" role="alert">
+                @ViewBag.Hata
+            </div>
+        }
 
         <form asp-action="OgrenciLogin" asp-controller="Account" method="post">
 
-            <!--kullanıcı adı-->
+            <!-- Kullanıcı Adı veya E-posta -->
             <div class="mb-4">
-                <label asp-for="UserName" class="form-label fw-semibold fs-5">Kullanıcı Adı</label>
-                <input asp-for="UserName" class="form-control form-control-lg rounded-3" placeholder="Kullanıcı adınızı giriniz" />
-                <span asp-validation-for="UserName" class="text-danger"></span>
+                <label asp-for="UsernameOrEmail" class="form-label fw-semibold fs-5">Kullanıcı Adı veya E-posta</label>
+                <input asp-for="UsernameOrEmail" class="form-control form-control-lg rounded-3" placeholder="Kullanıcı adınızı veya e-postanızı giriniz" />
+                <span asp-validation-for="UsernameOrEmail" class="text-danger"></span>
             </div>
 
-            <!--şifre-->
+            <!-- Şifre -->
             <div class="mb-4">
                 <label asp-for="Password" class="form-label fw-semibold fs-5">Şifre</label>
                 <input asp-for="Password" class="form-control form-control-lg rounded-3" placeholder="Şifrenizi giriniz" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
-            <!--giriş butonu-->
+            <!-- Giriş Butonu -->
             <div class="d-grid mt-4">
                 <button type="submit" class="btn-custom-gradient shadow-lg" style="font-size: 1.5rem; padding: 1rem;">
                     Giriş Yap
@@ -46,3 +54,9 @@
     </div>
 
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
