@@ -23,8 +23,7 @@ namespace Lab3_proje.Controllers
             _kurallar = new Kurallar();
         }
 
-       
-        
+        // ANA GİRİŞ EKRANI
         [HttpGet]
         public IActionResult Login()
         {
@@ -39,7 +38,141 @@ namespace Lab3_proje.Controllers
             return View();
         }
 
-      
+        // ÖĞRENCİ REGİSTER
+        [HttpGet]
+        public IActionResult OgrenciRegister()
+        {
+            return View(new RegisterViewModel());
+        }
+
+        [HttpPost]
+        public IActionResult OgrenciRegister(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Kurallar sınıfı için geçici User nesnesi
+            var tempUser = new User
+            {
+                Name = model.Name,
+                UserName = model.UserName,
+                Email = model.Email,
+                Password = model.Password
+            };
+
+            // İsim Kuralı (Sadece harf ve boşluk, 2-50 karakter)
+            if (!_kurallar.IsimKontrol(tempUser))
+            {
+                ViewBag.Hata = "İsim sadece harflerden oluşmalı ve 2-50 karakter arasında olmalıdır!";
+                return View(model);
+            }
+
+            // Şifre Kuralı (8-12 karakter, en az 1 büyük harf ve 1 özel karakter)
+            if (!_kurallar.PasswordKontrol(tempUser))
+            {
+                ViewBag.Hata = "Şifre 8-12 karakter olmalı, en az 1 büyük harf ve 1 özel karakter içermelidir!";
+                return View(model);
+            }
+
+            // E-posta formatı kuralı (Regex)
+            if (!_kurallar.EpostaKontrol(tempUser))
+            {
+                ViewBag.Hata = "Lütfen geçerli bir e-posta formatı giriniz (örn: ad@alanadi.uzanti)!";
+                return View(model);
+            }
+
+            // Yeni kullanıcı nesnesi oluşturma
+            var newUser = new User
+            {
+                Name = model.Name,
+                UserName = model.UserName,
+                Email = model.Email,
+                Role = "ROLE_STUDENT"
+            };
+
+            newUser.BoslukTemizle(newUser.Name);
+            newUser.SifreyiHashle(model.Password);
+
+            _context.Users.Add(newUser);
+            _context.SaveChanges();
+
+            return RedirectToAction("OgrenciLogin");
+        }
+
+        // ADMİN REGİSTER
+        [HttpGet]
+        public IActionResult AdminRegister()
+        {
+            return View(new RegisterViewModel());
+        }
+
+        [HttpPost]
+        public IActionResult AdminRegister(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // kullanıcı adı kontrolü
+            if (_context.Users.Any(u => u.UserName == model.UserName))
+            {
+                ViewBag.Hata = $"'{model.UserName}' kullanıcı adı zaten alınmış! Başka bir kullanıcı adı seçin.";
+                return View(model);
+            }
+
+            // eposta kontrolü
+            if (_context.Users.Any(u => u.Email == model.Email))
+            {
+                ViewBag.Hata = "Bu e-posta adresiyle zaten kayıtlı bir hesap var!";
+                return View(model);
+            }
+
+            var tempUser = new User
+            {
+                Name = model.Name,
+                UserName = model.UserName,
+                Email = model.Email,
+                Password = model.Password
+            };
+
+            // kurallar kontrolü
+            if (!_kurallar.IsimKontrol(tempUser))
+            {
+                ViewBag.Hata = "İsim sadece harflerden oluşmalı ve 2-50 karakter arasında olmalıdır!";
+                return View(model);
+            }
+
+            if (!_kurallar.PasswordKontrol(tempUser))
+            {
+                ViewBag.Hata = "Şifre 8-12 karakter olmalı, en az 1 büyük harf ve 1 özel karakter içermelidir!";
+                return View(model);
+            }
+
+            if (!_kurallar.EpostaKontrol(tempUser))
+            {
+                ViewBag.Hata = "Lütfen geçerli bir e-posta formatı giriniz (örn: ad@alanadi.uzanti)!";
+                return View(model);
+            }
+
+            var newAdmin = new User
+            {
+                Name = model.Name,
+                UserName = model.UserName,
+                Email = model.Email,
+                Role = "ROLE_ADMIN"
+            };
+
+            newAdmin.BoslukTemizle(newAdmin.Name);
+            newAdmin.SifreyiHashle(model.Password);
+
+            _context.Users.Add(newAdmin);
+            _context.SaveChanges();
+
+            return RedirectToAction("AdminLogin");
+        }
         [HttpGet]
         public IActionResult OgrenciLogin()
         {

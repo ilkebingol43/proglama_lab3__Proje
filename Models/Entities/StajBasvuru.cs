@@ -19,7 +19,9 @@ namespace Lab3_proje.Models.Entities
         public DateTime YuklemeTarihi { get; set; } = DateTime.Now;
         public string Statu { get; set; } = "yüklendi";
         public string? raporMesajı { get; set; }
+
         public DateTime StajBaslangicTarihi { get; set; }
+
         public DateTime StajBitisTarihi { get; set; }
 
         public string SecilenHaftalikGunler { get; set; } = string.Empty;
