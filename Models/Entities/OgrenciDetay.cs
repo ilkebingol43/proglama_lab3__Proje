@@ -20,7 +20,7 @@ namespace Lab3_proje.Models.Entities
         [StringLength(11)]
 
 
-        public int TCKimlik { get; private set; }
+        public string TCKimlik { get; set; } = string.Empty;
 
         public string BelgeTeslimYili { get; set; } = "2025-2026";
         public string IkametgahAdresi { get; set; } = string.Empty;
