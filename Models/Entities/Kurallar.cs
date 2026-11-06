@@ -21,7 +21,7 @@ namespace Lab3_proje.Models.Entities
             return true;
         }
 
-        // Şifre Kontrolü: 8-12 karakter arası, en az 1 büyük harf ve 1 özel karakter içermeli
+        // sifre kontrolü: 8-12 karakter arası, en az 1 büyük harf ve 1 özel karakter içermeli
         public bool PasswordKontrol(User user)
         {
             if (string.IsNullOrWhiteSpace(user.Password) || user.Password.Length < 8 || user.Password.Length > 12)
@@ -40,7 +40,7 @@ namespace Lab3_proje.Models.Entities
             return true;
         }
 
-        // E-Posta Kontrolü: Regex ile ad@alanadi.uzanti format kontrolü
+        // eposta kontrolü: Regex ile ad@alanadi.uzanti format kontrolü
         public bool EpostaKontrol(User user)
         {
             if (string.IsNullOrWhiteSpace(user.Email))

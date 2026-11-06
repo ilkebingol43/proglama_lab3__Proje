@@ -1,0 +1,62 @@
+﻿@model Lab3_proje.Models.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Admin Girişi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/css/costumtheme.css" rel="stylesheet" />
+
+<!-- Kayıt Ol Linki -->
+<div style="position: fixed; top: 16px; right: 40px; z-index: 1050;">
+    <a href="/Account/Register" class="text-decoration-none fw-bold fs-5" style="color: #10B981;">Kayıt Ol</a>
+</div>
+
+<!-- Ana İçerik -->
+<div class="w-100 d-flex flex-column justify-content-center align-items-center" style="min-height: 60vh;">
+
+    <h1 class="fw-bold text-dark mb-5" style="font-size: 6rem;">Admin Girişi</h1>
+
+    <div class="shadow-lg p-5 rounded-4 bg-white" style="min-width: 420px; max-width: 450px;">
+
+        <!-- Hata Mesajı Alanı -->
+        @if (ViewBag.Hata != null)
+        {
+            <div class="alert alert-danger text-center mb-4 rounded-3" role="alert">
+                @ViewBag.Hata
+            </div>
+        }
+
+        <form asp-action="AdminLogin" asp-controller="Account" method="post">
+
+            <!-- Kullanıcı Adı veya E-posta -->
+            <div class="mb-4">
+                <label asp-for="UsernameOrEmail" class="form-label fw-semibold fs-5">Kullanıcı Adı veya E-posta</label>
+                <input asp-for="UsernameOrEmail" class="form-control form-control-lg rounded-3" placeholder="Kullanıcı adı veya e-posta giriniz" />
+                <span asp-validation-for="UsernameOrEmail" class="text-danger"></span>
+            </div>
+
+            <!-- Şifre -->
+            <div class="mb-4">
+                <label asp-for="Password" class="form-label fw-semibold fs-5">Şifre</label>
+                <input asp-for="Password" class="form-control form-control-lg rounded-3" placeholder="Şifrenizi giriniz" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <!-- Giriş Butonu -->
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn-custom-gradient shadow-lg" style="font-size: 1.5rem; padding: 1rem;">
+                    Giriş Yap
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
