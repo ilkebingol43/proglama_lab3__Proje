@@ -12,13 +12,13 @@ namespace Lab3_proje.Models.Entities
         public virtual User? User { get; set; }
 
         [Required]
-        public string DosyaAdı { get; set; } = string.Empty;
+        public string DosyaAdi { get; set; } = string.Empty;
         [Required]
         public string DosyaYolu { get; set; } = string.Empty;
         public DateTime YuklemeTarihi { get; set; } = DateTime.Now;
         public string Statu { get; set; } = "yüklendi";
         public string? raporMesajı { get; set; }
-        public DateTime stajBaslangıcTarihi { get; set; }
+        public DateTime StajBaslangıcTarihi { get; set; }
         public DateTime StajBitisTarihi { get; set; }
 
         public string SecilenHaftalikGunler { get; set; } = string.Empty;

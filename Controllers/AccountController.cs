@@ -34,6 +34,11 @@ namespace Lab3_proje.Controllers
             return View();
         }
 
+
+
+
+
+        // OGRENCİ REGİSTER
         // boş ogrenci kayıt formunu gösterir
         [HttpGet]
         public IActionResult OgrenciRegister()
@@ -87,7 +92,7 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
 
-            //ePosta formatı kuralı (Regex)
+            //eposta formatı kuralı (Regex)
             if (!_kurallar.EpostaKontrol(tempUser))
             {
                 ViewBag.Hata = "Lütfen geçerli bir e-posta formatı giriniz (örn: ad@alanadi.uzanti)!";
@@ -117,9 +122,79 @@ namespace Lab3_proje.Controllers
             return RedirectToAction("OgrenciLogin");
         }
 
-       
+
+
+
+        // ADMİN REGİSTER
+        [HttpGet]
+        public IActionResult AdminRegister()
+        {
+            return View(new RegisterViewModel());
+        }
+        [HttpPost]
+        public IActionResult AdminRegister(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            // kullanıcı adı kontolu
+            if (_context.Users.Any(u => u.UserName == model.UserName))
+            {
+                ViewBag.Hata = $"'{model.UserName}' kullanıcı adı zaten alınmış! Başka bir kullanıcı adı seçin.";
+                return View(model);
+            }
+            // eposta kontrolu
+            if (_context.Users.Any(u => u.Email == model.Email))
+            {
+                ViewBag.Hata = "Bu e-posta adresiyle zaten kayıtlı bir hesap var!";
+                return View(model);
+            }
+            var tempUser = new User
+            {
+                Name = model.Name,
+                UserName = model.UserName,
+                Email = model.Email,
+                Password = model.Password
+            };
+            // kurallar kontrolu (İsim, Şifre, eposta)
+            if (!_kurallar.IsimKontrol(tempUser))
+            {
+                ViewBag.Hata = "İsim sadece harflerden oluşmalı ve 2-50 karakter arasında olmalıdır!";
+                return View(model);
+            }
+            if (!_kurallar.PasswordKontrol(tempUser))
+            {
+                ViewBag.Hata = "Şifre 8-12 karakter olmalı, en az 1 büyük harf ve 1 özel karakter içermelidir!";
+                return View(model);
+            }
+            if (!_kurallar.EpostaKontrol(tempUser))
+            {
+                ViewBag.Hata = "Lütfen geçerli bir e-posta formatı giriniz (örn: ad@alanadi.uzanti)!";
+                return View(model);
+            }
+            // admin kullanıcı olulturma (Rolü ROLE_ADMIN yapılır)
+            var newAdmin = new User
+            {
+                Name = model.Name,
+                UserName = model.UserName,
+                Email = model.Email,
+                Role = "ROLE_ADMIN"
+            };
+            newAdmin.BoslukTemizle(newAdmin.Name);
+            newAdmin.SifreyiHashle(model.Password);
+            _context.Users.Add(newAdmin);
+            _context.SaveChanges();
+            // Başarılı kayıt sonrası Admin Giriş ekranına yönlendir
+            return RedirectToAction("AdminLogin");
+        }
+
+
+
+
+
+
         //ANA GİRİS
-      
         [HttpGet]
         public IActionResult Login()
         {
@@ -128,7 +203,6 @@ namespace Lab3_proje.Controllers
 
       
         //ogrenci giris islemleri
-       
         [HttpGet]
         public IActionResult OgrenciLogin()
         {
