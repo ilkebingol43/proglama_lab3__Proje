@@ -17,6 +17,53 @@ namespace Lab3_proje.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.14");
 
+            modelBuilder.Entity("Lab3_proje.Models.Entities.StajBasvuru", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DosyaAdı")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DosyaYolu")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("HesaplanmısStajGunSayısı")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SecilenHaftalikGunler")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StajBitisTarihi")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Statu")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("YuklemeTarihi")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("raporMesajı")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("stajBaslangıcTarihi")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StajBasvurulari");
+                });
+
             modelBuilder.Entity("Lab3_proje.Models.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -24,6 +71,11 @@ namespace Lab3_proje.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
@@ -60,6 +112,88 @@ namespace Lab3_proje.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("User");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("Lab3_proje.Models.Entities.OgrenciDetay", b =>
+                {
+                    b.HasBaseType("Lab3_proje.Models.Entities.User");
+
+                    b.Property<string>("BelgeTeslimYili")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DogumTarihi")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IkametgahAdresi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OgrenciNo")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OkuduguBolum")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("OncekiStajGünSayisi")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SaglikYardimStatüsü")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TCKimlik")
+                        .HasMaxLength(11)
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TelefonNumarası")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Uyruk")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.HasDiscriminator().HasValue("OgrenciDetay");
+                });
+
+            modelBuilder.Entity("Lab3_proje.Models.Entities.StajBasvuru", b =>
+                {
+                    b.HasOne("Lab3_proje.Models.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Lab3_proje.Models.Entities.OgrenciDetay", b =>
+                {
+                    b.HasOne("Lab3_proje.Models.Entities.User", "User")
+                        .WithOne("OgrenciDetay")
+                        .HasForeignKey("Lab3_proje.Models.Entities.OgrenciDetay", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Lab3_proje.Models.Entities.User", b =>
+                {
+                    b.Navigation("OgrenciDetay");
                 });
 #pragma warning restore 612, 618
         }
