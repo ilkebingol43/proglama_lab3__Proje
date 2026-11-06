@@ -26,10 +26,9 @@ namespace Lab3_proje.Models.Entities
         public DateTime? LockoutEndTime { get; set; }
         public string Role { get; set; } = "ROLE_STUDENT";
 
-        
-        
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public virtual OgrenciDetay? OgrenciDetay { get; set; }
         // Şifreyi BCrypt ile güvenli hash'e çeviren metot
         public void SifreyiHashle(string password)
         {
