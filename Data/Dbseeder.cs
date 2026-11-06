@@ -13,7 +13,7 @@ namespace Lab3_proje.Data
                 return;
             }
 
-            // Sadece Sistem Yöneticisi (Admin) Hesabı Oluşturuyoruz
+            // Sadece Sistem Yöneticisi  Hesabı Oluşturuyoruz
             var adminUser = new User // kendi oluşturduğumuz sınıf 
             {
                 Name = "Sistem Yoneticisi",
