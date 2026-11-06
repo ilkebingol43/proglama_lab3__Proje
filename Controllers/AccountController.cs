@@ -23,80 +23,112 @@ namespace Lab3_proje.Controllers
             _context = context;
         }
 
-        // =============================================================
-        // KAYIT İŞLEMLERİ (Register)
-        // =============================================================
+       
+        //kayıt islemleri
+       
 
-        // 1. Boş Kayıt Formunu Gösterir
+        // Kayıt ol Ekranı
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
-        // 2. Kayıt Formunu Gönderir ve Veritabanına Yazar
-        [HttpPost]
-        public IActionResult Register(User model)
+        // boş ogrenci kayıt formunu gösterir
+        [HttpGet]
+        public IActionResult OgrenciRegister()
         {
-            // KURAL 1: Kullanıcı adı daha önce alınmış mı?
+            return View(new RegisterViewModel());
+        }
+
+        // Öğrenci kayıt formunu doğrular ve veritabanına kaydeder
+        [HttpPost]
+        public IActionResult OgrenciRegister(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Kullanıcı adı daha önce alınmış mı
             if (_context.Users.Any(u => u.UserName == model.UserName))
             {
                 ViewBag.Hata = $"'{model.UserName}' kullanıcı adı zaten alınmış! Başka bir kullanıcı adı seçin.";
                 return View(model);
             }
 
-            // KURAL 2: E-Posta daha önce alınmış mı?
+            //eposta daha önce alınmış mı
             if (_context.Users.Any(u => u.Email == model.Email))
             {
                 ViewBag.Hata = "Bu e-posta adresiyle zaten kayıtlı bir hesap var!";
                 return View(model);
             }
 
-            // KURAL 3: İsim Kuralı (Sadece harf ve boşluk, 2-50 karakter)
-            if (!_kurallar.IsimKontrol(model))
+            // Kurallar sınıfı için geçici User nesnesi
+            var tempUser = new User
+            {
+                Name = model.Name,
+                UserName = model.UserName,
+                Email = model.Email,
+                Password = model.Password
+            };
+
+            //İsim Kuralı (Sadece harf ve boşluk, 2-50 karakter)
+            if (!_kurallar.IsimKontrol(tempUser))
             {
                 ViewBag.Hata = "İsim sadece harflerden oluşmalı ve 2-50 karakter arasında olmalıdır!";
                 return View(model);
             }
 
-            // KURAL 4: Şifre Kuralı (8-12 karakter, en az 1 büyük harf ve 1 özel karakter)
-            if (!_kurallar.PasswordKontrol(model))
+            //sifre Kuralı (8-12 karakter, en az 1 büyük harf ve 1 özel karakter)
+            if (!_kurallar.PasswordKontrol(tempUser))
             {
                 ViewBag.Hata = "Şifre 8-12 karakter olmalı, en az 1 büyük harf ve 1 özel karakter içermelidir!";
                 return View(model);
             }
 
-            // KURAL 5: E-Posta Formatı Kuralı (Regex)
-            if (!_kurallar.EpostaKontrol(model))
+            //ePosta formatı kuralı (Regex)
+            if (!_kurallar.EpostaKontrol(tempUser))
             {
                 ViewBag.Hata = "Lütfen geçerli bir e-posta formatı giriniz (örn: ad@alanadi.uzanti)!";
                 return View(model);
             }
 
-            // Şifreyi BCrypt ile hashliyoruz
-            model.SifreyiHashle(model.Password);
+            // Yeni kullanıcı nesnesi oluşturma
+            var newUser = new User
+            {
+                Name = model.Name,
+                UserName = model.UserName,
+                Email = model.Email,
+                Role = "ROLE_STUDENT"
+            };
 
-            // Yeni kaydolan herkes Öğrenci rolünü alır
-            model.Role = "ROLE_STUDENT";
+            // İsimdeki fazla boşlukları temizle
+            newUser.BoslukTemizle(newUser.Name);
 
-            _context.Users.Add(model);
+            // Şifreyi BCrypt ile güvenle hashle
+            newUser.SifreyiHashle(model.Password);
+
+            // Veritabanına ekle ve kaydet
+            _context.Users.Add(newUser);
             _context.SaveChanges();
 
-            return RedirectToAction("Login");
+            // Kayıt başarıl ogrenciyi doğrudan ogrenci giriş sayfasına yönlendir
+            return RedirectToAction("OgrenciLogin");
         }
 
-        // =============================================================
-        // ANA GİRİŞ SEÇİM EKRANI (İki Butonlu Sayfa)
-        // =============================================================
+       
+        //ANA GİRİS
+      
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
-        // =============================================================
-        // ÖĞRENCİ GİRİŞ İŞLEMLERİ
-        // =============================================================
+      
+        //ogrenci giris islemleri
+       
         [HttpGet]
         public IActionResult OgrenciLogin()
         {
@@ -111,7 +143,7 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
 
-            // Kullanıcı adı veya E-posta ile ara ve SADECE ROLE_STUDENT olanı bul
+            // Kullanıcı adı veya eposta ile ara ve sadece ROLE_STUDENT olanı bul
             var user = _context.Users.FirstOrDefault(u =>
                 (u.UserName == model.UsernameOrEmail || u.Email == model.UsernameOrEmail)
                 && u.Role == "ROLE_STUDENT");
@@ -138,7 +170,7 @@ namespace Lab3_proje.Controllers
                 }
             }
 
-            // Şifre doğrulama (BCrypt)
+            //sifre doğrulama BCrypt
             bool sifreDogruMu = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
 
             if (!sifreDogruMu)
@@ -158,7 +190,7 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
 
-            // Giriş başarılı: Hataları sıfırla
+            //giriş başarılı hataları sıfırla
             user.GirisSayisiSifirlama();
             _context.SaveChanges();
 
@@ -179,9 +211,9 @@ namespace Lab3_proje.Controllers
             return RedirectToAction("Index", "Student");
         }
 
-        // =============================================================
-        // ADMIN GİRİŞ İŞLEMLERİ
-        // =============================================================
+     
+        //admin giris işlemleri
+      
         [HttpGet]
         public IActionResult AdminLogin()
         {
@@ -196,7 +228,7 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
 
-            // Kullanıcı adı veya E-posta ile ara ve SADECE ROLE_ADMIN olanı bul
+            //kullanıcı adı veya eposta ile ara ve sadece ROLE_ADMIN olanı bul
             var user = _context.Users.FirstOrDefault(u =>
                 (u.UserName == model.UsernameOrEmail || u.Email == model.UsernameOrEmail)
                 && u.Role == "ROLE_ADMIN");
@@ -207,7 +239,7 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
 
-            // Hesap kilitli mi kontrolü (15 dakika)
+            //hesap kilitli mi kontrolü (15 dakika)
             if (user.KilitlendiMi)
             {
                 if (user.LockoutEndTime.HasValue && user.LockoutEndTime.Value > DateTime.Now)
@@ -223,7 +255,7 @@ namespace Lab3_proje.Controllers
                 }
             }
 
-            // Şifre doğrulama (BCrypt)
+            // sifre doğrulama BCrypt
             bool sifreDogruMu = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
 
             if (!sifreDogruMu)
@@ -243,11 +275,11 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
 
-            // Giriş başarılı: Hataları sıfırla
+            // giriş başarılı hataları sıfırla
             user.GirisSayisiSifirlama();
             _context.SaveChanges();
 
-            // Cookie ile oturum başlat
+            // cookie ile oturum başlat
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -264,9 +296,9 @@ namespace Lab3_proje.Controllers
             return RedirectToAction("Index", "Admin");
         }
 
-        // =============================================================
-        // ÇIKIŞ YAP (Logout) & YETKİSİZ ERİŞİM (AccessDenied)
-        // =============================================================
+        
+
+        // çıkış yap ve yerkisiz giriş
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
