@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Lab3_proje.Data;
 using Lab3_proje.Models.Entities;
 using Lab3_proje.Models.ViewModels;
+using Microsoft.EntityFrameworkCore;
+using Lab3_proje.Services.Validation;
 
 namespace Lab3_proje.Controllers
 {
@@ -23,17 +25,27 @@ namespace Lab3_proje.Controllers
             _context = context;
         }
 
-        // Öğrencinin ana sayfası, yüklediği son başvuruyu gösterir
-        public IActionResult Index()
+
+
+        //ogrenci ana sayfası
+        public async Task<IActionResult> Index()
         {
             int userId = GetCurrentUserId();
-            var sonBasvuru = _context.StajBasvurulari
+
+            var user = await _context.Users
+                .Include(u => u.OgrenciDetay)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            var sonBasvuru = await _context.StajBasvurulari
                 .Where(b => b.UserId == userId)
                 .OrderByDescending(b => b.YuklemeTarihi)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
+            ViewBag.Ogrenci = user;
             return View(sonBasvuru);
         }
+
+       
 
         // Evrak yükleme ekranını açar
         [HttpGet]
@@ -46,6 +58,13 @@ namespace Lab3_proje.Controllers
         [HttpPost]
         public async Task<IActionResult> EvrakYukle(EvrakYukleViewModel model)
         {
+            KuralKontrolcu tarihKontrolcu = new StajTarihKontrolcu();
+            if (!tarihKontrolcu.KontrolEt(model.StajBaslangicTarihi, out string hataMesaji))
+            {
+                ModelState.AddModelError("", hataMesaji);
+                return View(model);
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);
