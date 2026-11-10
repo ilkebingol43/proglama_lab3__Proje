@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Lab3_proje.Data;
 using Lab3_proje.Models.Entities;
 using Lab3_proje.Models.ViewModels;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Lab3_proje.Controllers
 {
@@ -133,3 +134,4 @@ namespace Lab3_proje.Controllers
         }
     }
 }
+
