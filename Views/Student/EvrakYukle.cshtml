@@ -1,0 +1,98 @@
+﻿@model Lab3_proje.Models.ViewModels.EvrakYukleViewModel
+
+@{
+    ViewData["Title"] = "Ek-16 Evrak Yükleme";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4 p-4 bg-white">
+                
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                    <h3 class="fw-bold text-dark mb-0">Ek-16 Staj Belgesi Yükleme</h3>
+                    <a href="/Student/Index" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        Geri Dön
+                    </a>
+                </div>
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 mb-4" role="alert"></div>
+
+                <form asp-action="EvrakYukle" asp-controller="Student" method="post" enctype="multipart/form-data">
+
+                    <div class="mb-4">
+                        <label asp-for="BelgeDosyasi" class="form-label fw-semibold">Ek-16 Staj Formu (Dosya Seçin)</label>
+                        <input asp-for="BelgeDosyasi" type="file" class="form-control form-control-lg rounded-3" accept=".doc,.docx,.pdf,.jpeg,.jpg,.png" />
+                        <span asp-validation-for="BelgeDosyasi" class="text-danger small"></span>
+                        <small class="text-muted d-block mt-1">İzin verilen formatlar: .pdf, .doc, .docx, .jpeg, .png</small>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="OgretimYili" class="form-label fw-semibold">Öğretim Yılı</label>
+                            <input asp-for="OgretimYili" class="form-control form-control-lg rounded-3" placeholder="Örn: 2025-2026" />
+                            <span asp-validation-for="OgretimYili" class="text-danger small"></span>
+                            <small class="text-muted d-block mt-1">Birbirini takip eden iki yıl giriniz.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Yariyil" class="form-label fw-semibold">Yarıyıl / Dönem</label>
+                            <select asp-for="Yariyil" class="form-select form-select-lg rounded-3">
+                                <option value="Güz">Güz</option>
+                                <option value="Bahar">Bahar</option>
+                                <option value="Yaz">Yaz</option>
+                            </select>
+                            <span asp-validation-for="Yariyil" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="StajBaslangicTarihi" class="form-label fw-semibold">Staj Başlangıç Tarihi</label>
+                            <input asp-for="StajBaslangicTarihi" type="date" class="form-control form-control-lg rounded-3" />
+                            <span asp-validation-for="StajBaslangicTarihi" class="text-danger small"></span>
+                            <small class="text-muted d-block mt-1">Belge en az 30 gün önce yüklenmelidir.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="StajBitisTarihi" class="form-label fw-semibold">Staj Bitiş Tarihi</label>
+                            <input asp-for="StajBitisTarihi" type="date" class="form-control form-control-lg rounded-3" />
+                            <span asp-validation-for="StajBitisTarihi" class="text-danger small"></span>
+                            <small class="text-muted d-block mt-1">Seçilen resmi tatiller hesaptan düşülecektir.</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold d-block">Staj Yapılacak Haftalık Günler</label>
+                        <div class="d-flex flex-wrap gap-3 p-3 bg-light rounded-3">
+                            @{
+                                var gunler = new[] { "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi" };
+                            }
+                            @foreach (var gun in gunler)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="SecilenGunler" value="@gun" id="gun_@gun" checked />
+                                    <label class="form-check-label" for="gun_@gun">@gun</label>
+                                </div>
+                            }
+                        </div>
+                        <span asp-validation-for="SecilenGunler" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-success btn-lg rounded-3" style="background-color: #10B981; border: none;">
+                            Belgeyi Kaydet ve Gönder
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Lab3_proje.Data;
 using Lab3_proje.Models.Entities;
 using Lab3_proje.Models.ViewModels;
+using Microsoft.EntityFrameworkCore;
+using Lab3_proje.Services.Validation;
 
 namespace Lab3_proje.Controllers
 {
@@ -23,17 +25,27 @@ namespace Lab3_proje.Controllers
             _context = context;
         }
 
-        // Öğrencinin ana sayfası, yüklediği son başvuruyu gösterir
-        public IActionResult Index()
+
+
+        //ogrenci ana sayfası
+        public async Task<IActionResult> Index()
         {
             int userId = GetCurrentUserId();
-            var sonBasvuru = _context.StajBasvurulari
+
+            var user = await _context.Users
+                .Include(u => u.OgrenciDetay)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            var sonBasvuru = await _context.StajBasvurulari
                 .Where(b => b.UserId == userId)
                 .OrderByDescending(b => b.YuklemeTarihi)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
+            ViewBag.Ogrenci = user;
             return View(sonBasvuru);
         }
+
+       
 
         // Evrak yükleme ekranını açar
         [HttpGet]
@@ -57,7 +69,7 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
 
-            // İzin verilen dosya uzantıları
+            // Dosya uzantı kontrolü
             var izinliUzantilar = new[] { ".doc", ".docx", ".pdf", ".jpeg", ".jpg", ".png" };
             var uzanti = Path.GetExtension(model.BelgeDosyasi.FileName).ToLowerInvariant();
 
@@ -67,12 +79,55 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
 
-            // Staj başlangıcından en az 30 gün önce yüklenmeli
-            if ((model.StajBaslangicTarihi.Date - DateTime.Today).TotalDays < 30)
+            // Bitiş tarihi kontrolü
+            if (model.StajBitisTarihi < model.StajBaslangicTarihi)
             {
-                DateTime sonTarih = model.StajBaslangicTarihi.AddDays(-30);
-                ModelState.AddModelError("", $"Evrak staj başlangıcından en az 30 gün önce yüklenmelidir. En geç yükleme tarihi: {sonTarih:dd.MM.yyyy}");
+                ModelState.AddModelError("", "Staj bitiş tarihi başlangıç tarihinden önce olamaz.");
                 return View(model);
+            }
+
+            // En az bir gün seçilmiş mi kontrolü
+            if (model.SecilenGunler == null || model.SecilenGunler.Count == 0)
+            {
+                ModelState.AddModelError("", "Lütfen staj yapılacak en az bir gün seçiniz.");
+                return View(model);
+            }
+
+            // 30 gün kuralı kontrolü
+            KuralKontrolcu tarihKontrolcu = new StajTarihKontrolcu();
+            if (!tarihKontrolcu.KontrolEt(model.StajBaslangicTarihi, out string hataTarih))
+            {
+                ModelState.AddModelError("", hataTarih);
+                return View(model);
+            }
+
+            // Öğretim yılı format kontrolü
+            KuralKontrolcu ogretimYiliKontrolcu = new OgretimYiliKontrolcu();
+            if (!ogretimYiliKontrolcu.KontrolEt(model.OgretimYili, out string hataYil))
+            {
+                ModelState.AddModelError("", hataYil);
+                return View(model);
+            }
+
+            // Seçilen günlere göre resmi tatiller hariç staj iş günü sayısını hesaplama
+            int hesaplananGun = 0;
+            int dusulenTatilSayisi = 0;
+            var kultur = new System.Globalization.CultureInfo("tr-TR");
+
+            for (var tarih = model.StajBaslangicTarihi.Date; tarih <= model.StajBitisTarihi.Date; tarih = tarih.AddDays(1))
+            {
+                string gunAdi = tarih.ToString("dddd", kultur);
+                if (model.SecilenGunler.Contains(gunAdi))
+                {
+                    if (ResmiTatilServisi.TatilMi(tarih, out _))
+                    {
+                        dusulenTatilSayisi++;
+                    }
+                    else
+                    {
+                        hesaplananGun++;
+                    }
+                }
             }
 
             // Dosyayı wwwroot/uploads klasörüne kaydetme
@@ -92,7 +147,6 @@ namespace Lab3_proje.Controllers
 
             int userId = GetCurrentUserId();
 
-            // Veritabanına yeni başvuru ekle
             var basvuru = new StajBasvuru
             {
                 UserId = userId,
@@ -100,19 +154,21 @@ namespace Lab3_proje.Controllers
                 DosyaYolu = "/uploads/" + dosyaAdi,
                 DosyaUzantisi = uzanti,
                 YuklemeTarihi = DateTime.Now,
-                Statu = "Yuklendi",
+                Statu = "yüklendi",
                 StajBaslangicTarihi = model.StajBaslangicTarihi,
                 StajBitisTarihi = model.StajBitisTarihi,
-                SecilenHaftalikGunler = string.Join(",", model.SecilenGunler)
+                SecilenHaftalikGunler = string.Join(",", model.SecilenGunler),
+                HesaplanmısStajGunSayısı = hesaplananGun,
+                raporMesajı = $"Dönem: {model.OgretimYili} {model.Yariyil}"
             };
 
             _context.StajBasvurulari.Add(basvuru);
             await _context.SaveChangesAsync();
 
-            TempData["Mesaj"] = "Belgeniz yüklendi, inceleme aşamasına alındı.";
+            string tatilBilgisi = dusulenTatilSayisi > 0 ? $" ({dusulenTatilSayisi} gün resmi tatil hesaptan düşüldü)" : "";
+            TempData["Mesaj"] = $"Ek-16 belgeniz başarıyla yüklendi. Hesaplanan staj süresi: {hesaplananGun} iş günü{tatilBilgisi}.";
             return RedirectToAction("Index");
         }
-
         // Giriş yapan öğrencinin id bilgisini alır
         private int GetCurrentUserId()
         {
