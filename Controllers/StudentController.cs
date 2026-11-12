@@ -45,12 +45,25 @@ namespace Lab3_proje.Controllers
             return View(sonBasvuru);
         }
 
-       
 
-        // Evrak yükleme ekranını açar
+
+        // Evrak yükleme ekranını açar (Tamamlandı kontrolü ile)
         [HttpGet]
-        public IActionResult EvrakYukle()
+        public async Task<IActionResult> EvrakYukle()
         {
+            int userId = GetCurrentUserId();
+
+            var sonBasvuru = await _context.StajBasvurulari
+                .Where(b => b.UserId == userId)
+                .OrderByDescending(b => b.YuklemeTarihi)
+                .FirstOrDefaultAsync();
+
+            if (sonBasvuru != null && sonBasvuru.Statu.Equals("tamamlandi", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Hata"] = "Staj başvurunuz 'Tamamlandı' statüsünde olduğu için evrak üzerinde değişiklik yapamazsınız.";
+                return RedirectToAction("Index");
+            }
+
             return View(new EvrakYukleViewModel());
         }
 
@@ -58,6 +71,19 @@ namespace Lab3_proje.Controllers
         [HttpPost]
         public async Task<IActionResult> EvrakYukle(EvrakYukleViewModel model)
         {
+            int userId = GetCurrentUserId();
+
+            var sonBasvuru = await _context.StajBasvurulari
+                .Where(b => b.UserId == userId)
+                .OrderByDescending(b => b.YuklemeTarihi)
+                .FirstOrDefaultAsync();
+
+            if (sonBasvuru != null && sonBasvuru.Statu.Equals("tamamlandi", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Hata"] = "Staj başvurunuz 'Tamamlandı' statüsünde olduğu için evrak üzerinde değişiklik yapamazsınız.";
+                return RedirectToAction("Index");
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -145,8 +171,6 @@ namespace Lab3_proje.Controllers
                 await model.BelgeDosyasi.CopyToAsync(stream);
             }
 
-            int userId = GetCurrentUserId();
-
             var basvuru = new StajBasvuru
             {
                 UserId = userId,
@@ -177,4 +201,3 @@ namespace Lab3_proje.Controllers
         }
     }
 }
-
