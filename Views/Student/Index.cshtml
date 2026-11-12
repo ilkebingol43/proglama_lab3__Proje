@@ -11,10 +11,18 @@
 
     @if (TempData["Mesaj"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Mesaj"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Mesaj"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    }
+
+    @if (TempData["Hata"] != null)
+    {
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Hata"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
     }
 
     @if (TempData["Hata"] != null)
@@ -60,6 +68,7 @@
                     <h4 class="fw-bold text-dark mb-0">Staj Başvuru Durumu</h4>
                     @if (!tamamlandiMi)
                     {
+<<<<<<< HEAD
                         <a href="/Student/EvrakYukle" class="btn btn-success px-4 rounded-3" style="background-color: #10B981; border: none;">
                             Evrak Yükle
                         </a>
@@ -69,88 +78,108 @@
                         <span class="badge bg-secondary p-2 px-3 rounded-pill fs-6">
                             Başvuru Tamamlandı (Düzenlenemez)
                         </span>
+=======
+                    <a href="/Student/EvrakYukle" class="btn btn-success px-4 rounded-3" style="background-color: #10B981; border: none;">
+                        Evrak Yükle
+                    </a>
+                    }
+                    else
+                    {
+                    <span class="badge bg-secondary p-2 px-3 rounded-pill fs-6">
+                        Başvuru Tamamlandı (Düzenlenemez)
+                    </span>
+>>>>>>> 945e2f1c23c8044c89e17a2e3a37f041baab004f
                     }
                 </div>
 
                 @if (Model == null)
                 {
+<<<<<<< HEAD
                     <div class="text-center py-5">
                         <div class="text-secondary mb-3 fs-5">Henüz sisteme yüklenmiş bir Ek-16 staj evrakınız bulunmamaktadır.</div>
                         <a href="/Student/EvrakYukle" class="btn btn-lg btn-success px-4 rounded-3" style="background-color: #10B981; border: none;">
                             Evrak Yükle
                         </a>
                     </div>
+=======
+                <div class="text-center py-5">
+                    <div class="text-secondary mb-3 fs-5">Henüz sisteme yüklenmiş bir Ek-16 staj evrakınız bulunmamaktadır.</div>
+                    <a href="/Student/EvrakYukle" class="btn btn-lg btn-success px-4 rounded-3" style="background-color: #10B981; border: none;">
+                        Evrak Yükle
+                    </a>
+                </div>
+>>>>>>> 945e2f1c23c8044c89e17a2e3a37f041baab004f
                 }
                 else
                 {
-                    <div class="row g-3 mb-4">
-                        <div class="col-sm-6">
-                            <div class="p-3 bg-light rounded-3">
-                                <small class="text-secondary d-block">Başvuru Durumu</small>
-                                @if (Model.Statu == "yüklendi" || Model.Statu == "Yuklendi")
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-secondary d-block">Başvuru Durumu</small>
+                            @if (Model.Statu == "yüklendi" || Model.Statu == "Yuklendi")
                                 {
-                                    <span class="badge bg-primary fs-6 mt-1">Yüklendi</span>
+                            <span class="badge bg-primary fs-6 mt-1">Yüklendi</span>
                                 }
                                 else if (Model.Statu == "inceleniyor" || Model.Statu == "Inceleniyor")
                                 {
-                                    <span class="badge bg-warning text-dark fs-6 mt-1">İnceleniyor</span>
+                            <span class="badge bg-warning text-dark fs-6 mt-1">İnceleniyor</span>
                                 }
                                 else if (Model.Statu == "onaylandi" || Model.Statu == "Onaylandi")
                                 {
-                                    <span class="badge bg-success fs-6 mt-1">Onaylandı</span>
+                            <span class="badge bg-success fs-6 mt-1">Onaylandı</span>
                                 }
                                 else if (Model.Statu == "hatali" || Model.Statu == "Hatali")
                                 {
-                                    <span class="badge bg-danger fs-6 mt-1">Hatalı / Eksik</span>
+                            <span class="badge bg-danger fs-6 mt-1">Hatalı / Eksik</span>
                                 }
                                 else if (Model.Statu == "tamamlandi" || Model.Statu == "Tamamlandi")
                                 {
-                                    <span class="badge bg-dark fs-6 mt-1">Tamamlandı</span>
+                            <span class="badge bg-dark fs-6 mt-1">Tamamlandı</span>
                                 }
-                            </div>
-                        </div>
-
-                        <div class="col-sm-6">
-                            <div class="p-3 bg-light rounded-3">
-                                <small class="text-secondary d-block">Yükleme Tarihi</small>
-                                <span class="fw-bold fs-6 mt-1 d-block">@Model.YuklemeTarihi.ToString("dd.MM.yyyy HH:mm")</span>
-                            </div>
-                        </div>
-
-                        <div class="col-sm-6">
-                            <div class="p-3 bg-light rounded-3">
-                                <small class="text-secondary d-block">Staj Tarih Aralığı</small>
-                                <span class="fw-bold fs-6 mt-1 d-block">
-                                    @Model.StajBaslangicTarihi.ToString("dd.MM.yyyy") - @Model.StajBitisTarihi.ToString("dd.MM.yyyy")
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="col-sm-6">
-                            <div class="p-3 bg-light rounded-3">
-                                <small class="text-secondary d-block">Haftalık Günler</small>
-                                <span class="fw-bold fs-6 mt-1 d-block">
-                                    @(string.IsNullOrWhiteSpace(Model.SecilenHaftalikGunler) ? "-" : Model.SecilenHaftalikGunler)
-                                </span>
-                            </div>
                         </div>
                     </div>
 
-                    <div class="p-3 border rounded-3 d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <span class="fw-semibold text-dark d-block">Yüklenen Belge: @Model.DosyaAdi</span>
-                            <small class="text-muted">Uzantı: @Model.DosyaUzantisi</small>
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-secondary d-block">Yükleme Tarihi</small>
+                            <span class="fw-bold fs-6 mt-1 d-block">@Model.YuklemeTarihi.ToString("dd.MM.yyyy HH:mm")</span>
                         </div>
-                        <a href="@Model.DosyaYolu" target="_blank" class="btn btn-outline-primary btn-sm px-3 rounded-pill">
-                            Dosyayı İndir / Aç
-                        </a>
                     </div>
 
-                    @if (!string.IsNullOrWhiteSpace(Model.raporMesajı))
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-secondary d-block">Staj Tarih Aralığı</small>
+                            <span class="fw-bold fs-6 mt-1 d-block">
+                                @Model.StajBaslangicTarihi.ToString("dd.MM.yyyy") - @Model.StajBitisTarihi.ToString("dd.MM.yyyy")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <small class="text-secondary d-block">Haftalık Günler</small>
+                            <span class="fw-bold fs-6 mt-1 d-block">
+                                @(string.IsNullOrWhiteSpace(Model.SecilenHaftalikGunler) ? "-" : Model.SecilenHaftalikGunler)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 border rounded-3 d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <span class="fw-semibold text-dark d-block">Yüklenen Belge: @Model.DosyaAdi</span>
+                        <small class="text-muted">Uzantı: @Model.DosyaUzantisi</small>
+                    </div>
+                    <a href="@Model.DosyaYolu" target="_blank" class="btn btn-outline-primary btn-sm px-3 rounded-pill">
+                        Dosyayı İndir / Aç
+                    </a>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.raporMesajı))
                     {
-                        <div class="alert alert-warning mb-0" role="alert">
-                            <strong>Yetkili Notu / Rapor:</strong> @Model.raporMesajı
-                        </div>
+                <div class="alert alert-warning mb-0" role="alert">
+                    <strong>Yetkili Notu / Rapor:</strong> @Model.raporMesajı
+                </div>
                     }
                 }
             </div>

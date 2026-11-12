@@ -132,7 +132,11 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
         }
+<<<<<<< HEAD
         // Admin in başvuru durumunu değiştirmesini sağlar onaylandı tamamlandı hatalı
+=======
+        // Adminin başvuru durumunu değiştirmesini sağlar onaylandı tamamlandı Hatalı 
+>>>>>>> 945e2f1c23c8044c89e17a2e3a37f041baab004f
         [HttpPost]
         public async Task<IActionResult> StatuGuncelle(int id, string yeniStatu)
         {
@@ -150,7 +154,11 @@ namespace Lab3_proje.Controllers
             return RedirectToAction("Index");
         }
 
+<<<<<<< HEAD
         // Admin in bir başvuruyu ve sunucudaki dosyasını silmesini sağlar
+=======
+        // Adminin bir başvuruyu ve sunucudaki dosyasını silmesini sağlar
+>>>>>>> 945e2f1c23c8044c89e17a2e3a37f041baab004f
         [HttpPost]
         public async Task<IActionResult> BasvuruSil(int id)
         {
