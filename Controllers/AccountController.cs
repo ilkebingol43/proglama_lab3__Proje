@@ -111,6 +111,15 @@ namespace Lab3_proje.Controllers
         [HttpPost]
         public IActionResult AdminRegister(RegisterViewModel model)
         {
+            // Okuldan alınan özel yönetici güvenlik kodu
+            const string GECERLI_ADMIN_KODU = "kou";
+
+            if (string.IsNullOrWhiteSpace(model.YoneticiKodu) || model.YoneticiKodu.Trim() != GECERLI_ADMIN_KODU)
+            {
+                ViewBag.Hata = "Geçersiz Yönetici Özel Kodu! Yalnızca okul yetkilileri admin hesabı oluşturabilir.";
+                return View(model);
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -173,6 +182,9 @@ namespace Lab3_proje.Controllers
 
             return RedirectToAction("AdminLogin");
         }
+
+
+        //OGRENCİ LOGİN
         [HttpGet]
         public IActionResult OgrenciLogin()
         {
