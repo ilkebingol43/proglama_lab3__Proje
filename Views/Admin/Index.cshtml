@@ -160,6 +160,69 @@
                                         }
                                     </td>
 
+                                    <!-- İşlem Butonları (İndir, Durum Güncelle, Sil) -->
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm">
+
+                                            <!-- Dosya İndir -->
+                                            <a href="@item.DosyaYolu" target="_blank" class="btn btn-outline-secondary" download title="Belgeyi İndir">
+                                                İndir
+                                            </a>
+
+                                            <!-- Durum Değiştir Açılır Menüsü -->
+                                            <button type="button" class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Durum
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                <li><h6 class="dropdown-header">Durumu Güncelle</h6></li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Onaylandi" />
+                                                        <button type="submit" class="dropdown-item text-success">
+                                                            ✔ Onaylandı Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Tamamlandi" />
+                                                        <button type="submit" class="dropdown-item text-primary fw-semibold">
+                                                            ★ Tamamlandı Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Hatali_Eksik" />
+                                                        <button type="submit" class="dropdown-item text-danger">
+                                                            ✖ Hatalı / Eksik Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Inceleniyor" />
+                                                        <button type="submit" class="dropdown-item text-warning">
+                                                            ⏳ İnceleniyor Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+
+                                            <!-- Başvuru Sil Butonu -->
+                                            <form asp-action="BasvuruSil" asp-controller="Admin" method="post" class="d-inline" onsubmit="return confirm('Bu başvuruyu ve yüklenen evrakı silmek istediğinize emin misiniz?');">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-outline-danger" title="Başvuruyu Sil">
+                                                    Sil
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
                                     <!-- İndirme / Görüntüleme Butonu -->
                                     <td class="text-end">
                                         <a href="@item.DosyaYolu" target="_blank" class="btn btn-sm btn-outline-secondary" download>
