@@ -32,6 +32,14 @@
         </div>
     }
 
+    @if (TempData["Hata"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Hata"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <!-- Arama ve Filtreleme Kartı -->
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body p-3">
