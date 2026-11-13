@@ -5,6 +5,15 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<!-- Layout Üst Menüsünün Üzerine Sabitlenen Çıkış Butonu -->
+<div style="position: fixed; top: 10px; right: 24px; z-index: 1050;">
+    <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold shadow-sm">
+            🚪 Çıkış Yap
+        </button>
+    </form>
+</div>
+
 <div class="container my-4">
 
     <!-- Üst Başlık ve Hızlı Menü Butonları -->
@@ -22,7 +31,6 @@
             </a>
         </div>
     </div>
-
     <!-- Başarı / Bildirim Mesajı -->
     @if (TempData["Basari"] != null)
     {
