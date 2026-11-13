@@ -14,7 +14,7 @@
     </form>
 </div>
 
-<div class="container my-4">
+<div class="w-100 my-4 px-2">
 
     <!-- Üst Başlık ve Hızlı Menü Butonları -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom gap-3">
@@ -31,10 +31,11 @@
             </a>
         </div>
     </div>
+
     <!-- Başarı / Bildirim Mesajı -->
     @if (TempData["Basari"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm" role="alert">
             @TempData["Basari"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -42,25 +43,25 @@
 
     @if (TempData["Hata"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm" role="alert">
             @TempData["Hata"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
     <!-- Arama ve Filtreleme Kartı -->
-    <div class="card border-0 shadow-sm rounded-3 mb-4">
-        <div class="card-body p-3">
-            <form method="get" asp-action="Index" asp-controller="Admin" class="row g-2 align-items-center">
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <form method="get" asp-action="Index" asp-controller="Admin" class="row g-3 align-items-center">
                 
                 <!-- Metin Arama Kutusu -->
                 <div class="col-md-5">
-                    <input type="text" name="arama" value="@Context.Request.Query["arama"]" class="form-control" placeholder="Öğrenci adı veya dosya adı ile ara..." />
+                    <input type="text" name="arama" value="@Context.Request.Query["arama"]" class="form-control form-control-lg rounded-3 fs-6" placeholder="Öğrenci adı veya dosya adı ile ara..." />
                 </div>
 
                 <!-- Statü Filtre Açılır Kutusu -->
                 <div class="col-md-4">
-                    <select name="statuFiltre" class="form-select">
+                    <select name="statuFiltre" class="form-select form-select-lg rounded-3 fs-6">
                         <option value="">Tüm Statüler</option>
                         <option value="Yuklendi" selected="@(Context.Request.Query["statuFiltre"] == "Yuklendi")">Yüklendi</option>
                         <option value="Inceleniyor" selected="@(Context.Request.Query["statuFiltre"] == "Inceleniyor")">İnceleniyor</option>
@@ -69,10 +70,10 @@
                     </select>
                 </div>
 
-                <!-- Filtrele Butonu -->
+                <!-- Filtrele Butonları -->
                 <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-dark w-100 fw-semibold">Filtrele</button>
-                    <a href="/Admin/Index" class="btn btn-light border" title="Sıfırla">Temizle</a>
+                    <button type="submit" class="btn btn-dark btn-lg rounded-3 w-100 fw-semibold fs-6">Filtrele</button>
+                    <a href="/Admin/Index" class="btn btn-light btn-lg border rounded-3 fs-6 px-3" title="Sıfırla">Temizle</a>
                 </div>
 
             </form>
@@ -80,7 +81,7 @@
     </div>
 
     <!-- Başvurular Tablosu -->
-    <div class="card border-0 shadow-sm rounded-3">
+    <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body p-0">
             @if (Model == null || !Model.Any())
             {
@@ -90,17 +91,17 @@
             }
             else
             {
-                <div class="table-responsive">
+                <div class="table-responsive" style="min-height: 240px;">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Öğrenci Adı</th>
-                                <th>Kullanıcı Adı / No</th>
-                                <th>Dosya</th>
-                                <th>Yükleme Tarihi</th>
-                                <th>Staj Tarih Aralığı</th>
-                                <th>Statü</th>
-                                <th class="text-end">İşlem</th>
+                                <th class="py-3 ps-4">Öğrenci Adı</th>
+                                <th class="py-3">Kullanıcı Adı / No</th>
+                                <th class="py-3">Dosya</th>
+                                <th class="py-3">Yükleme Tarihi</th>
+                                <th class="py-3">Staj Tarih Aralığı</th>
+                                <th class="py-3">Statü</th>
+                                <th class="py-3 pe-4 text-end" style="min-width: 200px;">İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,17 +109,17 @@
                             {
                                 <tr>
                                     <!-- Öğrenci Adı -->
-                                    <td class="fw-semibold text-dark">
+                                    <td class="fw-semibold text-dark ps-4 py-3">
                                         @(item.User?.Name ?? "Bilinmiyor")
                                     </td>
 
                                     <!-- Öğrenci No / Kullanıcı Adı -->
-                                    <td class="text-secondary small">
+                                    <td class="text-secondary small py-3">
                                         @(item.User?.UserName ?? "-")
                                     </td>
 
                                     <!-- Yüklenen Dosya -->
-                                    <td>
+                                    <td class="py-3">
                                         <span class="badge bg-light text-dark border">
                                             @(item.DosyaUzantisi?.ToUpperInvariant() ?? "DOSYA")
                                         </span>
@@ -128,12 +129,12 @@
                                     </td>
 
                                     <!-- Yükleme Tarihi -->
-                                    <td class="small text-secondary">
+                                    <td class="small text-secondary py-3">
                                         @item.YuklemeTarihi.ToString("dd.MM.yyyy HH:mm")
                                     </td>
 
                                     <!-- Staj Tarih Aralığı -->
-                                    <td class="small">
+                                    <td class="small py-3">
                                         @if (item.StajBaslangicTarihi != DateTime.MinValue && item.StajBitisTarihi != DateTime.MinValue)
                                         {
                                             <span>@item.StajBaslangicTarihi.ToString("dd.MM.yyyy") - @item.StajBitisTarihi.ToString("dd.MM.yyyy")</span>
@@ -144,8 +145,8 @@
                                         }
                                     </td>
 
-                                    <!-- statü rozeti -->
-                                    <td>
+                                    <!-- Statü Rozeti -->
+                                    <td class="py-3">
                                         @if (item.Statu == "Yuklendi" || item.Statu == "yüklendi")
                                         {
                                             <span class="badge bg-secondary">Yüklendi</span>
@@ -168,11 +169,68 @@
                                         }
                                     </td>
 
-                                    <!-- İndirme / Görüntüleme Butonu -->
-                                    <td class="text-end">
-                                        <a href="@item.DosyaYolu" target="_blank" class="btn btn-sm btn-outline-secondary" download>
-                                            İndir
-                                        </a>
+                                    <!-- İşlem Butonları (İndir, Durum Güncelle, Sil) -->
+                                    <td class="text-end pe-4 py-3">
+                                        <div class="btn-group btn-group-sm">
+
+                                            <!-- Dosya İndir -->
+                                            <a href="@item.DosyaYolu" target="_blank" class="btn btn-outline-secondary" download title="Belgeyi İndir">
+                                                İndir
+                                            </a>
+
+                                            <!-- Durum Değiştir Açılır Menüsü -->
+                                            <button type="button" class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Durum
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                <li><h6 class="dropdown-header">Durumu Güncelle</h6></li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Onaylandi" />
+                                                        <button type="submit" class="dropdown-item text-success">
+                                                            ✔ Onaylandı Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Tamamlandi" />
+                                                        <button type="submit" class="dropdown-item text-primary fw-semibold">
+                                                            ★ Tamamlandı Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Inceleniyor" />
+                                                        <button type="submit" class="dropdown-item text-warning">
+                                                            ⏳ İnceleniyor Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Hatali_Eksik" />
+                                                        <button type="submit" class="dropdown-item text-danger">
+                                                            ✖ Hatalı / Eksik Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+
+                                            <!-- Başvuru Sil Butonu -->
+                                            <form asp-action="BasvuruSil" asp-controller="Admin" method="post" class="d-inline" onsubmit="return confirm('Bu başvuruyu ve yüklenen evrakı silmek istediğinize emin misiniz?');">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-outline-danger" title="Başvuruyu Sil">
+                                                    Sil
+                                                </button>
+                                            </form>
+
+                                        </div>
                                     </td>
                                 </tr>
                             }
