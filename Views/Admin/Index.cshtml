@@ -1,0 +1,241 @@
+﻿@model IEnumerable<Lab3_proje.Models.Entities.StajBasvuru>
+
+@{
+    ViewData["Title"] = "Admin Paneli - Başvurular";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-4">
+
+    <!-- Üst Başlık ve Hızlı Menü Butonları -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom gap-3">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Staj Başvuruları Yönetimi</h2>
+            <p class="text-secondary mb-0">Sisteme yüklenen Ek-16 belgelerini inceleyebilir ve filtreleyebilirsiniz.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/Admin/VeriSetiYukle" class="btn btn-outline-success fw-semibold">
+                📥 Veri Seti Yükle
+            </a>
+            <a href="/Admin/Tamamlananlar" class="btn btn-outline-primary fw-semibold">
+                ✅ Tamamlanan Belgeler
+            </a>
+        </div>
+    </div>
+
+    <!-- Başarı / Bildirim Mesajı -->
+    @if (TempData["Basari"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Basari"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Hata"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Hata"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Arama ve Filtreleme Kartı -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-3">
+            <form method="get" asp-action="Index" asp-controller="Admin" class="row g-2 align-items-center">
+                
+                <!-- Metin Arama Kutusu -->
+                <div class="col-md-5">
+                    <input type="text" name="arama" value="@Context.Request.Query["arama"]" class="form-control" placeholder="Öğrenci adı veya dosya adı ile ara..." />
+                </div>
+
+                <!-- Statü Filtre Açılır Kutusu -->
+                <div class="col-md-4">
+                    <select name="statuFiltre" class="form-select">
+                        <option value="">Tüm Statüler</option>
+                        <option value="Yuklendi" selected="@(Context.Request.Query["statuFiltre"] == "Yuklendi")">Yüklendi</option>
+                        <option value="Inceleniyor" selected="@(Context.Request.Query["statuFiltre"] == "Inceleniyor")">İnceleniyor</option>
+                        <option value="Hatali_Eksik" selected="@(Context.Request.Query["statuFiltre"] == "Hatali_Eksik")">Hatalı / Eksik</option>
+                        <option value="Tamamlandi" selected="@(Context.Request.Query["statuFiltre"] == "Tamamlandi")">Tamamlandı</option>
+                    </select>
+                </div>
+
+                <!-- Filtrele Butonu -->
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-dark w-100 fw-semibold">Filtrele</button>
+                    <a href="/Admin/Index" class="btn btn-light border" title="Sıfırla">Temizle</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Başvurular Tablosu -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-0">
+            @if (Model == null || !Model.Any())
+            {
+                <div class="text-center py-5">
+                    <p class="text-muted fs-5 mb-0">Henüz listelenecek bir staj başvurusu bulunmuyor.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Öğrenci Adı</th>
+                                <th>Kullanıcı Adı / No</th>
+                                <th>Dosya</th>
+                                <th>Yükleme Tarihi</th>
+                                <th>Staj Tarih Aralığı</th>
+                                <th>Statü</th>
+                                <th class="text-end">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <!-- Öğrenci Adı -->
+                                    <td class="fw-semibold text-dark">
+                                        @(item.User?.Name ?? "Bilinmiyor")
+                                    </td>
+
+                                    <!-- Öğrenci No / Kullanıcı Adı -->
+                                    <td class="text-secondary small">
+                                        @(item.User?.UserName ?? "-")
+                                    </td>
+
+                                    <!-- Yüklenen Dosya -->
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            @(item.DosyaUzantisi?.ToUpperInvariant() ?? "DOSYA")
+                                        </span>
+                                        <span class="small ms-1 text-truncate d-inline-block" style="max-width: 160px;" title="@item.DosyaAdi">
+                                            @item.DosyaAdi
+                                        </span>
+                                    </td>
+
+                                    <!-- Yükleme Tarihi -->
+                                    <td class="small text-secondary">
+                                        @item.YuklemeTarihi.ToString("dd.MM.yyyy HH:mm")
+                                    </td>
+
+                                    <!-- Staj Tarih Aralığı (Düzeltilen Kısım) -->
+                                    <td class="small">
+                                        @if (item.StajBaslangicTarihi != DateTime.MinValue && item.StajBitisTarihi != DateTime.MinValue)
+                                        {
+                                            <span>@item.StajBaslangicTarihi.ToString("dd.MM.yyyy") - @item.StajBitisTarihi.ToString("dd.MM.yyyy")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+
+                                    <!-- Statü Rozeti -->
+                                    <td>
+                                        @if (item.Statu == "Yuklendi" || item.Statu == "yüklendi")
+                                        {
+                                            <span class="badge bg-secondary">Yüklendi</span>
+                                        }
+                                        else if (item.Statu == "Inceleniyor")
+                                        {
+                                            <span class="badge bg-warning text-dark">İnceleniyor</span>
+                                        }
+                                        else if (item.Statu == "Hatali_Eksik")
+                                        {
+                                            <span class="badge bg-danger">Hatalı / Eksik</span>
+                                        }
+                                        else if (item.Statu == "Tamamlandi")
+                                        {
+                                            <span class="badge bg-success">Tamamlandı</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info text-dark">@item.Statu</span>
+                                        }
+                                    </td>
+
+                                    <!-- İşlem Butonları (İndir, Durum Güncelle, Sil) -->
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm">
+
+                                            <!-- Dosya İndir -->
+                                            <a href="@item.DosyaYolu" target="_blank" class="btn btn-outline-secondary" download title="Belgeyi İndir">
+                                                İndir
+                                            </a>
+
+                                            <!-- Durum Değiştir Açılır Menüsü -->
+                                            <button type="button" class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Durum
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                <li><h6 class="dropdown-header">Durumu Güncelle</h6></li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Onaylandi" />
+                                                        <button type="submit" class="dropdown-item text-success">
+                                                            ✔ Onaylandı Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Tamamlandi" />
+                                                        <button type="submit" class="dropdown-item text-primary fw-semibold">
+                                                            ★ Tamamlandı Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Hatali_Eksik" />
+                                                        <button type="submit" class="dropdown-item text-danger">
+                                                            ✖ Hatalı / Eksik Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Inceleniyor" />
+                                                        <button type="submit" class="dropdown-item text-warning">
+                                                            ⏳ İnceleniyor Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+
+                                            <!-- Başvuru Sil Butonu -->
+                                            <form asp-action="BasvuruSil" asp-controller="Admin" method="post" class="d-inline" onsubmit="return confirm('Bu başvuruyu ve yüklenen evrakı silmek istediğinize emin misiniz?');">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-outline-danger" title="Başvuruyu Sil">
+                                                    Sil
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+                                    <!-- İndirme / Görüntüleme Butonu -->
+                                    <td class="text-end">
+                                        <a href="@item.DosyaYolu" target="_blank" class="btn btn-sm btn-outline-secondary" download>
+                                            İndir
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+</div>

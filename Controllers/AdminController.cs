@@ -132,6 +132,51 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
         }
+        // Adminin başvuru durumunu değiştirmesini sağlar onaylandı tamamlandı Hatalı 
+        [HttpPost]
+        public async Task<IActionResult> StatuGuncelle(int id, string yeniStatu)
+        {
+            var basvuru = await _context.StajBasvurulari.FindAsync(id);
+            if (basvuru == null)
+            {
+                TempData["Hata"] = "Başvuru bulunamadı.";
+                return RedirectToAction("Index");
+            }
+
+            basvuru.Statu = yeniStatu;
+            await _context.SaveChangesAsync();
+
+            TempData["Basari"] = $"Başvuru durumu '{yeniStatu}' olarak güncellendi.";
+            return RedirectToAction("Index");
+        }
+
+        // Adminin bir başvuruyu ve sunucudaki dosyasını silmesini sağlar
+        [HttpPost]
+        public async Task<IActionResult> BasvuruSil(int id)
+        {
+            var basvuru = await _context.StajBasvurulari.FindAsync(id);
+            if (basvuru == null)
+            {
+                TempData["Hata"] = "Silinecek başvuru bulunamadı.";
+                return RedirectToAction("Index");
+            }
+
+            // Sunucudaki fiziksel dosyayı sil
+            if (!string.IsNullOrEmpty(basvuru.DosyaYolu))
+            {
+                var fizikselYol = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", basvuru.DosyaYolu.TrimStart('/'));
+                if (System.IO.File.Exists(fizikselYol))
+                {
+                    System.IO.File.Delete(fizikselYol);
+                }
+            }
+
+            _context.StajBasvurulari.Remove(basvuru);
+            await _context.SaveChangesAsync();
+
+            TempData["Basari"] = "Staj başvurusu ve dosyası başarıyla silindi.";
+            return RedirectToAction("Index");
+        }
     }
 }
 

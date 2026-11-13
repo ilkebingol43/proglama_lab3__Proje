@@ -151,9 +151,10 @@ namespace Lab3_proje.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("TCKimlik")
+                    b.Property<string>("TCKimlik")
+                        .IsRequired()
                         .HasMaxLength(11)
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("TelefonNumarası")
                         .IsRequired()
