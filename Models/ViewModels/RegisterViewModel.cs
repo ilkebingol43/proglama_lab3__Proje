@@ -27,5 +27,9 @@ namespace Lab3_proje.Models.ViewModels
         [Compare("Password", ErrorMessage = "Girdiğiniz şifreler birbiriyle eşleşmiyor!")]
         [Display(Name = "Şifre Tekrar")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+
+        [Display(Name = "Yönetici Özel Kodu")]
+        public string? YoneticiKodu { get; set; }
     }
 }

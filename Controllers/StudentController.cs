@@ -156,6 +156,49 @@ namespace Lab3_proje.Controllers
                 }
             }
 
+            // Word (.docx) belgesi ise metin taraması ve öğrenci bilgisi karşılaştırması
+            string belgeUyarisi = "";
+            if (uzanti == ".docx")
+            {
+                try
+                {
+                    using (var archive = new System.IO.Compression.ZipArchive(model.BelgeDosyasi.OpenReadStream()))
+                    {
+                        var entry = archive.GetEntry("word/document.xml");
+                        if (entry != null)
+                        {
+                            using (var reader = new StreamReader(entry.Open()))
+                            {
+                                string xmlIcerik = await reader.ReadToEndAsync();
+                                string metin = System.Text.RegularExpressions.Regex.Replace(xmlIcerik, "<.*?>", " ");
+
+                                var ogrenci = await _context.Users
+                                    .Include(u => u.OgrenciDetay)
+                                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                                if (ogrenci != null)
+                                {
+                                    bool isimVar = !string.IsNullOrWhiteSpace(ogrenci.Name) &&
+                                                   metin.IndexOf(ogrenci.Name, StringComparison.OrdinalIgnoreCase) >= 0;
+
+                                    bool noVar = !string.IsNullOrWhiteSpace(ogrenci.OgrenciDetay?.OgrenciNo) &&
+                                                 metin.IndexOf(ogrenci.OgrenciDetay.OgrenciNo, StringComparison.OrdinalIgnoreCase) >= 0;
+
+                                    if (!isimVar && !noVar)
+                                    {
+                                        belgeUyarisi = " | [UYARI: Belgedeki öğrenci bilgileri sistemdeki hesabınızla uyuşmuyor!]";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Belge okuma hatasında akışı kesme
+                }
+            }
+
             // Dosyayı wwwroot/uploads klasörüne kaydetme
             var yuklemeKlasoru = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
             if (!Directory.Exists(yuklemeKlasoru))
@@ -183,14 +226,23 @@ namespace Lab3_proje.Controllers
                 StajBitisTarihi = model.StajBitisTarihi,
                 SecilenHaftalikGunler = string.Join(",", model.SecilenGunler),
                 HesaplanmısStajGunSayısı = hesaplananGun,
-                raporMesajı = $"Dönem: {model.OgretimYili} {model.Yariyil}"
+                raporMesajı = $"Dönem: {model.OgretimYili} {model.Yariyil}{belgeUyarisi}"
             };
 
             _context.StajBasvurulari.Add(basvuru);
             await _context.SaveChangesAsync();
 
             string tatilBilgisi = dusulenTatilSayisi > 0 ? $" ({dusulenTatilSayisi} gün resmi tatil hesaptan düşüldü)" : "";
-            TempData["Mesaj"] = $"Ek-16 belgeniz başarıyla yüklendi. Hesaplanan staj süresi: {hesaplananGun} iş günü{tatilBilgisi}.";
+
+            if (!string.IsNullOrEmpty(belgeUyarisi))
+            {
+                TempData["Hata"] = "Ek-16 belgeniz yüklendi fakat belgedeki isim/öğrenci numarası hesabınızla uyuşmuyor!";
+            }
+            else
+            {
+                TempData["Mesaj"] = $"Ek-16 belgeniz başarıyla yüklendi. Hesaplanan staj süresi: {hesaplananGun} iş günü{tatilBilgisi}.";
+            }
+
             return RedirectToAction("Index");
         }
         // Giriş yapan öğrencinin id bilgisini alır
@@ -201,4 +253,3 @@ namespace Lab3_proje.Controllers
         }
     }
 }
-

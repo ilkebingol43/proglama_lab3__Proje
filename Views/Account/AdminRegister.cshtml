@@ -49,10 +49,20 @@
                 <span asp-validation-for="Password" class="text-danger small"></span>
             </div>
 
-            <div class="mb-4">
+            <div class="mb-3">
                 <label asp-for="ConfirmPassword" class="form-label fw-semibold fs-6">Şifre Tekrarı</label>
                 <input asp-for="ConfirmPassword" class="form-control form-control-lg rounded-3" placeholder="Şifrenizi tekrar giriniz" />
                 <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+            </div>
+
+            <!-- Yönetici Özel Güvenlik Kodu -->
+            <div class="mb-4 p-3 border rounded-3 bg-light">
+                <label asp-for="YoneticiKodu" class="form-label fw-semibold fs-6 text-dark">
+                    Yönetici Özel Kodu <span class="text-danger">*</span>
+                </label>
+                <input asp-for="YoneticiKodu" type="password" class="form-control form-control-lg rounded-3" placeholder="Okul yönetiminden alınan özel kod" />
+                <span asp-validation-for="YoneticiKodu" class="text-danger small"></span>
+                <small class="text-muted d-block mt-1">Öğrencilerin yetkisiz admin hesabı açmasını önlemek için zorunludur.</small>
             </div>
 
             <div class="d-grid mt-4">

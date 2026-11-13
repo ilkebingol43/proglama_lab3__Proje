@@ -132,7 +132,7 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
         }
-        // Adminin başvuru durumunu değiştirmesini sağlar onaylandı tamamlandı Hatalı 
+        // Admin in başvuru durumunu değiştirmesini sağlar
         [HttpPost]
         public async Task<IActionResult> StatuGuncelle(int id, string yeniStatu)
         {
@@ -150,7 +150,7 @@ namespace Lab3_proje.Controllers
             return RedirectToAction("Index");
         }
 
-        // Adminin bir başvuruyu ve sunucudaki dosyasını silmesini sağlar
+        // Admin in bir başvuruyu ve sunucudaki dosyasını silmesini sağlar
         [HttpPost]
         public async Task<IActionResult> BasvuruSil(int id)
         {
