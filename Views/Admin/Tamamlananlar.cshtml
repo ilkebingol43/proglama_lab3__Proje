@@ -1,0 +1,158 @@
+﻿@model IEnumerable<Lab3_proje.Models.Entities.StajBasvuru>
+
+@{
+    ViewData["Title"] = "Tamamlanan Belgeler";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-4">
+
+    <!-- Üst Başlık ve Navigasyon -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom gap-3">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Tamamlanan Staj Belgeleri</h2>
+            <p class="text-secondary mb-0">Onaylanarak "Tamamlandı" statüsüne geçen ve kesinleşen staj evrakları.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/Admin/Index" class="btn btn-outline-secondary fw-semibold">
+                ← Tüm Başvurular
+            </a>
+            <a href="/Admin/VeriSetiYukle" class="btn btn-outline-success fw-semibold">
+                📥 Veri Seti Yükle
+            </a>
+        </div>
+    </div>
+
+    <!-- Bilgilendirme Notu -->
+    <div class="alert alert-info border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center">
+        <span class="fs-4 me-2">ℹ️</span>
+        <div>
+            Bu listedeki başvurular <strong>Tamamlandı</strong> olarak işaretlenmiştir. Öğrenci bu belgeler üzerinde artık düzenleme yapamaz; yalnızca yönetici tarafından kontrol edilebilir.
+        </div>
+    </div>
+
+    <!-- Başvuru Listesi Tablosu -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-0">
+            @if (Model == null || !Model.Any())
+            {
+                <div class="text-center py-5">
+                    <p class="text-muted fs-5 mb-0">Henüz "Tamamlandı" statüsüne geçmiş bir staj başvurusu bulunmuyor.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Öğrenci Adı</th>
+                                <th>Öğrenci No</th>
+                                <th>Dosya</th>
+                                <th>Staj Tarih Aralığı</th>
+                                <th>İş Günü</th>
+                                <th>Statü</th>
+                                <th class="text-end">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <!-- Öğrenci Adı -->
+                                    <td class="fw-semibold text-dark">
+                                        @(item.User?.Name ?? "Bilinmiyor")
+                                    </td>
+
+                                    <!-- Öğrenci No -->
+                                    <td class="text-secondary small">
+                                        @(item.User?.UserName ?? "-")
+                                    </td>
+
+                                    <!-- Dosya Bilgisi -->
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            @(item.DosyaUzantisi?.ToUpperInvariant() ?? "DOSYA")
+                                        </span>
+                                        <span class="small ms-1 text-truncate d-inline-block" style="max-width: 150px;" title="@item.DosyaAdi">
+                                            @item.DosyaAdi
+                                        </span>
+                                    </td>
+
+                                    <!-- Tarih Aralığı -->
+                                    <td class="small">
+                                        @if (item.StajBaslangicTarihi != DateTime.MinValue && item.StajBitisTarihi != DateTime.MinValue)
+                                        {
+                                            <span>@item.StajBaslangicTarihi.ToString("dd.MM.yyyy") - @item.StajBitisTarihi.ToString("dd.MM.yyyy")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+
+                                    <!-- Hesaplanan İş Günü -->
+                                    <td>
+                                        <span class="badge bg-light text-primary border fw-semibold">
+                                            @item.HesaplanmısStajGunSayısı Gün
+                                        </span>
+                                    </td>
+
+                                    <!-- Statü Rozeti -->
+                                    <td>
+                                        <span class="badge bg-success">Tamamlandı</span>
+                                    </td>
+
+                                    <!-- İşlemler -->
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm">
+                                            <!-- Dosyayı İndir -->
+                                            <a href="@item.DosyaYolu" target="_blank" class="btn btn-outline-secondary" download title="Belgeyi İndir">
+                                                İndir
+                                            </a>
+
+                                            <!-- Durumu Geri Alma / Değiştirme -->
+                                            <button type="button" class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Durum
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                <li><h6 class="dropdown-header">Durumu Değiştir</h6></li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Inceleniyor" />
+                                                        <button type="submit" class="dropdown-item text-warning">
+                                                            ⏳ İnceleniyor Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="StatuGuncelle" asp-controller="Admin" method="post" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="yeniStatu" value="Hatali_Eksik" />
+                                                        <button type="submit" class="dropdown-item text-danger">
+                                                            ✖ Hatalı / Eksik Yap
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+
+                                            <!-- Silme Butonu -->
+                                            <form asp-action="BasvuruSil" asp-controller="Admin" method="post" class="d-inline" onsubmit="return confirm('Bu tamamlanmış başvuruyu silmek istediğinize emin misiniz?');">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-outline-danger" title="Başvuruyu Sil">
+                                                    Sil
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
