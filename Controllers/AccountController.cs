@@ -83,6 +83,19 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
 
+            // Kullanıcı Aynı e posta ile kayıt olmaması için bir kontrol
+            if (_context.Users.Any(u => u.Email.ToLower() == model.Email.ToLower()))
+            {
+                ViewBag.Hata = "Bu e-posta adresiyle zaten kayıtlı bir hesap bulunmaktadır!";
+                return View(model);
+            }
+            // Kullanıcı Aynı UserName ile kyaıt olmaması için bir kontrol 
+            if(_context.Users.Any(u => u.UserName.ToLower() == model.UserName.ToLower()))
+    {
+                ViewBag.Hata = $"'{model.UserName}' kullanıcı adı zaten alınmış! Başka bir kullanıcı adı seçin.";
+                return View(model);
+            }
+
             // Yeni kullanıcı nesnesi oluşturma
             var newUser = new User
             {
