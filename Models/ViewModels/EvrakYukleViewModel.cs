@@ -11,6 +11,10 @@ namespace Lab3_proje.Models.ViewModels
         [Display(Name = "Ek-16 Belgesi")]
         public IFormFile? BelgeDosyasi { get; set; }
 
+        [Required(ErrorMessage = "Staj yapılacak kurum / firma adı zorunludur.")]
+        [Display(Name = "Staj Yapılacak Kurum / Şirket Adı")]
+        public string KurumAdi { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Öğretim yılı zorunludur.")]
         [Display(Name = "Öğretim Yılı")]
         public string OgretimYili { get; set; } = $"{DateTime.Today.Year}-{DateTime.Today.Year + 1}";

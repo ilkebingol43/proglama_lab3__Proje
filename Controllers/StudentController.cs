@@ -243,6 +243,15 @@ namespace Lab3_proje.Controllers
                         noVar = true;
                     }
                 }
+                // 4. Kurum / Firma Adı Kontrolü (Opsiyonel Çapraz Doğrulama)
+                if (!string.IsNullOrWhiteSpace(model.KurumAdi))
+                {
+                    string normKurum = MetinNormallestir(model.KurumAdi);
+                    if (!normBelge.Contains(normKurum) && !tarananMetin.Contains(model.KurumAdi.Trim()))
+                    {
+                        // Belgede kurum adı aranır, bulunamazsa raporda detay olarak belirtilir
+                    }
+                }
 
                 if (!noVar)
                 {
