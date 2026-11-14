@@ -83,6 +83,19 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
 
+            // Kullanıcı Aynı e posta ile kayıt olmaması için bir kontrol
+            if (_context.Users.Any(u => u.Email.ToLower() == model.Email.ToLower()))
+            {
+                ViewBag.Hata = "Bu e-posta adresiyle zaten kayıtlı bir hesap bulunmaktadır!";
+                return View(model);
+            }
+            // Kullanıcı Aynı UserName ile kyaıt olmaması için bir kontrol 
+            if(_context.Users.Any(u => u.UserName.ToLower() == model.UserName.ToLower()))
+    {
+                ViewBag.Hata = $"'{model.UserName}' kullanıcı adı zaten alınmış! Başka bir kullanıcı adı seçin.";
+                return View(model);
+            }
+
             // Yeni kullanıcı nesnesi oluşturma
             var newUser = new User
             {
@@ -279,6 +292,15 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
 
+            // Kilit süresi dolduysa hesabı yeniden aç
+            if (user.KilitlendiMi &&
+                user.LockoutEndTime.HasValue &&
+                user.LockoutEndTime.Value <= DateTime.Now)
+            {
+                user.GirisSayisiSifirlama();
+                await _context.SaveChangesAsync();
+            }
+
             // Kilit kontrolü
             if (user.KilitlendiMi && user.LockoutEndTime.HasValue && user.LockoutEndTime.Value > DateTime.Now)
             {
@@ -292,7 +314,15 @@ namespace Lab3_proje.Controllers
             {
                 user.GirisLoglama();
                 _context.SaveChanges();
-                ModelState.AddModelError("", "Admin şifresi hatalı!");
+                if (user.KilitlendiMi)
+                {
+                    ModelState.AddModelError("", "5 kez hatalı şifre girdiniz! Admin hesabınız 15 dakika kilitlendi.");
+                }
+                else
+                {
+                    int kalan = 5 - user.FailedLoginAttempts;
+                    ModelState.AddModelError("", $"Hatalı şifre! Kalan deneme hakkınız: {kalan}");
+                }
                 return View(model);
             }
 

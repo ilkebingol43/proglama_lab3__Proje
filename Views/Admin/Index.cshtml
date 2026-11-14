@@ -65,6 +65,7 @@
                         <option value="">Tüm Statüler</option>
                         <option value="Yuklendi" selected="@(Context.Request.Query["statuFiltre"] == "Yuklendi")">Yüklendi</option>
                         <option value="Inceleniyor" selected="@(Context.Request.Query["statuFiltre"] == "Inceleniyor")">İnceleniyor</option>
+                        <option value="Onaylandi" selected="@(Context.Request.Query["statuFiltre"] == "Onaylandi")">Onaylandı</option>
                         <option value="Hatali_Eksik" selected="@(Context.Request.Query["statuFiltre"] == "Hatali_Eksik")">Hatalı / Eksik</option>
                         <option value="Tamamlandi" selected="@(Context.Request.Query["statuFiltre"] == "Tamamlandi")">Tamamlandı</option>
                     </select>
@@ -154,6 +155,10 @@
                                         else if (item.Statu == "Inceleniyor")
                                         {
                                             <span class="badge bg-warning text-dark">İnceleniyor</span>
+                                        }
+                                        else if (item.Statu == "Onaylandi")
+                                        {
+                                            <span class="badge bg-success">Onaylandı</span>
                                         }
                                         else if (item.Statu == "Hatali_Eksik")
                                         {

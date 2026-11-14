@@ -221,7 +221,7 @@ namespace Lab3_proje.Controllers
                 DosyaYolu = "/uploads/" + dosyaAdi,
                 DosyaUzantisi = uzanti,
                 YuklemeTarihi = DateTime.Now,
-                Statu = "yüklendi",
+                Statu = "Yuklendi",
                 StajBaslangicTarihi = model.StajBaslangicTarihi,
                 StajBitisTarihi = model.StajBitisTarihi,
                 SecilenHaftalikGunler = string.Join(",", model.SecilenGunler),
