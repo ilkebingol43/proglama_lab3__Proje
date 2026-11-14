@@ -17,7 +17,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(options =>
     {
         options.LoginPath = "/Account/Login";               // Giriş yapmamış kişi buraya yönlendirilir
-        options.AccessDeniedPath = "/Account/AccessDenied"; // Yetkisi olmayan kişi (403 durumu) buraya yönlendirilir
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        };
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);  // 60 dakika hareketsiz kalırsa oturum kapanacak
     });
 
