@@ -6,7 +6,7 @@ namespace Lab3_proje.Models.Entities
     public class OgrenciDetay : User // kalıtım
     {
 
-        public int Id { get; set; }
+       
         public int UserId { get; set; }
         [ForeignKey("UserId")]
         public virtual User? User { get; set; }
