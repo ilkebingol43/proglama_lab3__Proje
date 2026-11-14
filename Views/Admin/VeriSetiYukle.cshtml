@@ -21,20 +21,17 @@
     <!-- Hata ve Bilgi Mesajları -->
     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-    <!-- CSV Format Bilgilendirme Kutusu -->
+    <!-- CSV Format Bilgilendirme Kutusu (Şartname Madde 4.3) -->
     <div class="card border-0 shadow-sm rounded-4 bg-light mb-4">
         <div class="card-body p-4">
-            <h5 class="fw-bold text-dark mb-2">CSV Dosya Formatı Nasıl Olmalı?</h5>
+            <h5 class="fw-bold text-dark mb-2">CSV Dosya Formatı (Şartname Madde 4.3)</h5>
             <p class="text-secondary small mb-3">
-                Yükleyeceğiniz CSV dosyasının ilk satırı başlık olmalı ve her satır virgülle ayrılmış şu sütunları içermelidir:
+                Yükleyeceğiniz CSV dosyasının ilk satırı başlık olmalı ve her satır virgülle (,) ayrılmış şu 12 sütunu içermelidir:
             </p>
-            <div class="bg-white p-3 rounded-3 border font-monospace small text-muted">
-                Ad Soyad, TC Kimlik No, Uyruk, Öğrenci No, Bölüm, Telefon, E-posta<br />
-                <span class="text-dark">Örn: Ahmet Yılmaz,12345678901,TC,210205001,Yazılım Mühendisliği,+90 555 123 45 67,ahmet@staj.edu.tr</span>
+            <div class="bg-white p-3 rounded-3 border font-monospace small text-muted overflow-auto">
+                Ad Soyad, TC Kimlik No, Uyruk, Öğrenci No, Doğum Tarihi, İkametgah Adresi, Bölüm, Belge Teslim Yılı, Önceki Staj Gün Sayısı, E-posta, Telefon No, Sağlık Yardımı Statüsü<br />
+                <span class="text-dark">Örn: Ahmet Yılmaz,12345678901,TC,210205001,2003-05-15,Umuttepe Mah. Üniversite Cad. No:10 İzmit Kocaeli,Yazılım Mühendisliği,2025-2026,0,ahmet@staj.edu.tr,+90 555 123 45 67,Var</span>
             </div>
-            <small class="text-muted d-block mt-2">
-                * Eklenen öğrencilerin varsayılan şifresi <code>Ogrenci123!</code> olarak oluşturulur.
-            </small>
         </div>
     </div>
 

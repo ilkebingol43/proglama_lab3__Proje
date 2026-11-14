@@ -31,5 +31,16 @@ namespace Lab3_proje.Models.ViewModels
 
         [Display(Name = "Staj Yapılacak Günler")]
         public List<string> SecilenGunler { get; set; } = new List<string>();
+
+        [Display(Name = "Staj Evrağı Teslim Google Form URL'si")]
+        public string? GoogleFormUrl { get; set; }
+
+        [Required(ErrorMessage = "Mühendis sayısı girmek zorunludur.")]
+        [Range(1, 1000, ErrorMessage = "Mühendis sayısı en az 1 olmalıdır.")]
+        [Display(Name = "İş Yerinde Çalışan Mühendis Sayısı")]
+        public int MuhendisSayisi { get; set; } = 1;
+
+        [Display(Name = "Mühendisin Mezun Olduğu Lisans Bölümü")]
+        public string? MuhendisMezuniyetBolumu { get; set; }
     }
 }
