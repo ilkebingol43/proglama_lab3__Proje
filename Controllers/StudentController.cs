@@ -185,6 +185,17 @@ namespace Lab3_proje.Controllers
                 }
                 catch { }
             }
+            else if (uzanti == ".doc")
+            {
+                try
+                {
+                    using (var docStream = model.BelgeDosyasi.OpenReadStream())
+                    {
+                        tarananMetin = DocMetinCikar(docStream);
+                    }
+                }
+                catch { }
+            }
             else if (uzanti == ".pdf")
             {
                 try
@@ -243,15 +254,6 @@ namespace Lab3_proje.Controllers
                         noVar = true;
                     }
                 }
-                // 4. Kurum / Firma Adı Kontrolü (Opsiyonel Çapraz Doğrulama)
-                if (!string.IsNullOrWhiteSpace(model.KurumAdi))
-                {
-                    string normKurum = MetinNormallestir(model.KurumAdi);
-                    if (!normBelge.Contains(normKurum) && !tarananMetin.Contains(model.KurumAdi.Trim()))
-                    {
-                        // Belgede kurum adı aranır, bulunamazsa raporda detay olarak belirtilir
-                    }
-                }
 
                 if (!noVar)
                 {
@@ -269,6 +271,28 @@ namespace Lab3_proje.Controllers
                 if (!tarihVar)
                 {
                     uyusmazliklar.Add("Staj başlangıç tarihi belgede bulunamadı");
+                }
+
+                // 4. Kurum / Firma Adı Kontrolü (Çapraz Doğrulama)
+                if (!string.IsNullOrWhiteSpace(model.KurumAdi))
+                {
+                    string normKurum = MetinNormallestir(model.KurumAdi);
+                    bool kurumVar = normBelge.Contains(normKurum) || tarananMetin.Contains(model.KurumAdi.Trim());
+
+                    if (!kurumVar)
+                    {
+                        // Kelime bazlı kontrol (örn: ASELSAN A.Ş. yazıldığında ASELSAN kelimesini belgede bulabilmesi için)
+                        var kurumKelimeleri = model.KurumAdi.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        if (kurumKelimeleri.Any(k => k.Length >= 3 && normBelge.Contains(MetinNormallestir(k))))
+                        {
+                            kurumVar = true;
+                        }
+                    }
+
+                    if (!kurumVar)
+                    {
+                        uyusmazliklar.Add("Kurum / Firma adı belgede bulunamadı");
+                    }
                 }
             }
 
@@ -438,6 +462,59 @@ namespace Lab3_proje.Controllers
                         }
                     }
                     sb.Append(' ');
+                }
+            }
+            catch { }
+            return sb.ToString();
+        }
+
+        // Word 97-2003 (.doc) ikili dosya ve alternatif formatlardan metin çıkarma
+        private static string DocMetinCikar(Stream stream)
+        {
+            var sb = new System.Text.StringBuilder();
+            try
+            {
+                using var ms = new MemoryStream();
+                stream.CopyTo(ms);
+                byte[] bytes = ms.ToArray();
+
+                if (bytes.Length == 0) return string.Empty;
+
+                // 1. Dosya aslında ZIP tabanlı DOCX ise (PK\x03\x04 ile başlar)
+                if (bytes.Length > 4 && bytes[0] == 0x50 && bytes[1] == 0x4B && bytes[2] == 0x03 && bytes[3] == 0x04)
+                {
+                    ms.Position = 0;
+                    using var archive = new System.IO.Compression.ZipArchive(ms, System.IO.Compression.ZipArchiveMode.Read);
+                    var entry = archive.GetEntry("word/document.xml");
+                    if (entry != null)
+                    {
+                        using var reader = new StreamReader(entry.Open());
+                        string xml = reader.ReadToEnd();
+                        return System.Text.RegularExpressions.Regex.Replace(xml, "<.*?>", " ");
+                    }
+                }
+
+                // 2. Word 97-2003 OLE2 (.doc) dosyalarındaki UTF-16LE metin blokları
+                string unicodeMetin = System.Text.Encoding.Unicode.GetString(bytes);
+                var unicodeKelimeler = System.Text.RegularExpressions.Regex.Matches(unicodeMetin, @"[\p{L}\p{N}\.\:\/\-]{2,}");
+                foreach (System.Text.RegularExpressions.Match m in unicodeKelimeler)
+                {
+                    sb.Append(m.Value).Append(' ');
+                }
+
+                // 3. Tek baytlık ANSI (Windows-1254 / Latin-1) ve UTF-8 metin blokları
+                string latinMetin = System.Text.Encoding.Latin1.GetString(bytes);
+                var latinKelimeler = System.Text.RegularExpressions.Regex.Matches(latinMetin, @"[\p{L}\p{N}\.\:\/\-]{3,}");
+                foreach (System.Text.RegularExpressions.Match m in latinKelimeler)
+                {
+                    sb.Append(m.Value).Append(' ');
+                }
+
+                string utf8Metin = System.Text.Encoding.UTF8.GetString(bytes);
+                var utf8Kelimeler = System.Text.RegularExpressions.Regex.Matches(utf8Metin, @"[\p{L}\p{N}\.\:\/\-]{3,}");
+                foreach (System.Text.RegularExpressions.Match m in utf8Kelimeler)
+                {
+                    sb.Append(m.Value).Append(' ');
                 }
             }
             catch { }

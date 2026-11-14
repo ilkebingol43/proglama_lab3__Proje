@@ -46,5 +46,6 @@ namespace Lab3_proje.Models.ViewModels
 
         [Display(Name = "Mühendisin Mezun Olduğu Lisans Bölümü")]
         public string? MuhendisMezuniyetBolumu { get; set; }
+    
     }
 }
