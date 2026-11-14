@@ -292,6 +292,15 @@ namespace Lab3_proje.Controllers
                 return View(model);
             }
 
+            // Kilit süresi dolduysa hesabı yeniden aç
+            if (user.KilitlendiMi &&
+                user.LockoutEndTime.HasValue &&
+                user.LockoutEndTime.Value <= DateTime.Now)
+            {
+                user.GirisSayisiSifirlama();
+                await _context.SaveChangesAsync();
+            }
+
             // Kilit kontrolü
             if (user.KilitlendiMi && user.LockoutEndTime.HasValue && user.LockoutEndTime.Value > DateTime.Now)
             {
@@ -305,7 +314,15 @@ namespace Lab3_proje.Controllers
             {
                 user.GirisLoglama();
                 _context.SaveChanges();
-                ModelState.AddModelError("", "Admin şifresi hatalı!");
+                if (user.KilitlendiMi)
+                {
+                    ModelState.AddModelError("", "5 kez hatalı şifre girdiniz! Admin hesabınız 15 dakika kilitlendi.");
+                }
+                else
+                {
+                    int kalan = 5 - user.FailedLoginAttempts;
+                    ModelState.AddModelError("", $"Hatalı şifre! Kalan deneme hakkınız: {kalan}");
+                }
                 return View(model);
             }
 

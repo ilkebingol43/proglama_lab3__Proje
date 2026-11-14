@@ -27,6 +27,7 @@
         }
 
         <form asp-action="OgrenciLogin" asp-controller="Account" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
 
             <!-- Kullanıcı Adı veya E-posta -->
             <div class="mb-4">
