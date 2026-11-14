@@ -1,14 +1,15 @@
-﻿using System;
+﻿using Lab3_proje.Data;
+using Lab3_proje.Models.Entities;
+using Lab3_proje.Models.ViewModels;
+using Lab3_proje.Services.Validation;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Lab3_proje.Data;
-using Lab3_proje.Models.Entities;
-using Lab3_proje.Models.ViewModels;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Lab3_proje.Controllers
 {
@@ -62,6 +63,7 @@ namespace Lab3_proje.Controllers
         }
 
         // CSV formatındaki öğrenci listesini okur ve veritabanına ekler
+        // CSV formatındaki 12 sütunlu öğrenci listesini okur ve veritabanına ekler
         [HttpPost]
         public async Task<IActionResult> VeriSetiYukle(VeriSetiYukleViewModel model)
         {
@@ -75,7 +77,7 @@ namespace Lab3_proje.Controllers
             {
                 using (var reader = new StreamReader(model.VeriDosyasi.OpenReadStream()))
                 {
-                    // Başlık satırını geç
+                    // Başlık satırını atla
                     var baslik = await reader.ReadLineAsync();
 
                     while (!reader.EndOfStream)
@@ -83,8 +85,68 @@ namespace Lab3_proje.Controllers
                         var satir = await reader.ReadLineAsync();
                         if (string.IsNullOrWhiteSpace(satir)) continue;
 
-                        var sutunlar = satir.Split(',');
-                        if (sutunlar.Length >= 7)
+                        // Hem virgül hem noktalı virgül desteği
+                        var sutunlar = satir.Split(';');
+                        if (sutunlar.Length < 7)
+                        {
+                            sutunlar = satir.Split(',');
+                        }
+
+                        // 12 Sütunlu Tam Şartname Formatı
+                        if (sutunlar.Length >= 12)
+                        {
+                            var adSoyad = sutunlar[0].Trim();
+                            var tc = sutunlar[1].Trim();
+                            var uyruk = sutunlar[2].Trim();
+                            var ogrNo = sutunlar[3].Trim();
+                            DateTime.TryParse(sutunlar[4].Trim(), out var dogumTarihi);
+                            var adres = sutunlar[5].Trim();
+                            var bolum = sutunlar[6].Trim();
+                            var teslimYili = sutunlar[7].Trim();
+                            int.TryParse(sutunlar[8].Trim(), out var oncekiStajGunu);
+                            var email = sutunlar[9].Trim();
+                            var tel = sutunlar[10].Trim();
+                            var saglik = sutunlar[11].Trim();
+
+                            // TC Kimlik ve Yabancı Uyruk Kontrolü
+                            KuralKontrolcu kimlikKontrolcu = new TCKimlikKontrolcu();
+                            if (!kimlikKontrolcu.KontrolEt($"{tc}|{uyruk}", out _))
+                            {
+                                continue;
+                            }
+
+                            // Aynı e-posta veya öğrenci no yoksa ekle
+                            if (!_context.Users.Any(u => u.Email == email || u.UserName == ogrNo))
+                            {
+                                var yeniOgrenci = new User
+                                {
+                                    Name = adSoyad,
+                                    UserName = ogrNo,
+                                    Email = email,
+                                    Role = "ROLE_STUDENT"
+                                };
+                                yeniOgrenci.SifreyiHashle("Ogrenci123!");
+
+                                var detay = new OgrenciDetay
+                                {
+                                    TCKimlik = tc,
+                                    Uyruk = uyruk,
+                                    OgrenciNo = ogrNo,
+                                    DogumTarihi = dogumTarihi,
+                                    IkametgahAdresi = adres,
+                                    OkuduguBolum = bolum,
+                                    BelgeTeslimYili = string.IsNullOrWhiteSpace(teslimYili) ? "2025-2026" : teslimYili,
+                                    OncekiStajGünSayisi = oncekiStajGunu,
+                                    TelefonNumarası = tel,
+                                    SaglikYardimStatüsü = saglik
+                                };
+
+                                yeniOgrenci.OgrenciDetay = detay;
+                                _context.Users.Add(yeniOgrenci);
+                            }
+                        }
+                        // 7 Sütunlu Basit Format (Geriye Dönük Uyumluluk)
+                        else if (sutunlar.Length >= 7)
                         {
                             var adSoyad = sutunlar[0].Trim();
                             var tc = sutunlar[1].Trim();
@@ -94,8 +156,7 @@ namespace Lab3_proje.Controllers
                             var tel = sutunlar[5].Trim();
                             var email = sutunlar[6].Trim();
 
-                            // Eğer bu email ile öğrenci yoksa yeni kayıt aç
-                            if (!_context.Users.Any(u => u.Email == email))
+                            if (!_context.Users.Any(u => u.Email == email || u.UserName == ogrNo))
                             {
                                 var yeniOgrenci = new User
                                 {
@@ -123,7 +184,7 @@ namespace Lab3_proje.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                TempData["Basari"] = "Öğrenci veri seti başarıyla eklendi.";
+                TempData["Basari"] = "Öğrenci veri seti başarıyla içe aktarıldı.";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)

@@ -19,48 +19,52 @@
 
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 mb-4" role="alert"></div>
 
-                <form asp-action="EvrakYukle" asp-controller="Student" method="post" enctype="multipart/form-data">
+                <form id="evrakForm" asp-action="EvrakYukle" asp-controller="Student" method="post" enctype="multipart/form-data">
 
+                    <!-- Belge Seçimi -->
                     <div class="mb-4">
                         <label asp-for="BelgeDosyasi" class="form-label fw-semibold">Ek-16 Staj Formu (Dosya Seçin)</label>
-                        <input asp-for="BelgeDosyasi" type="file" class="form-control form-control-lg rounded-3" accept=".doc,.docx,.pdf,.jpeg,.jpg,.png" />
+                        <input asp-for="BelgeDosyasi" type="file" class="form-control form-control-lg rounded-3" accept=".doc,.docx,.pdf,.jpeg,.jpg,.png" required />
                         <span asp-validation-for="BelgeDosyasi" class="text-danger small"></span>
                         <small class="text-muted d-block mt-1">İzin verilen formatlar: .pdf, .doc, .docx, .jpeg, .png</small>
                     </div>
 
+                    <!-- Öğretim Yılı ve Yarıyıl -->
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label asp-for="OgretimYili" class="form-label fw-semibold">Öğretim Yılı</label>
-                            <input asp-for="OgretimYili" class="form-control form-control-lg rounded-3" placeholder="Örn: 2025-2026" />
+                            <input asp-for="OgretimYili" class="form-control form-control-lg rounded-3" placeholder="Örn: 2025-2026" required />
                             <span asp-validation-for="OgretimYili" class="text-danger small"></span>
                             <small class="text-muted d-block mt-1">Birbirini takip eden iki yıl giriniz.</small>
                         </div>
                         <div class="col-md-6">
                             <label asp-for="Yariyil" class="form-label fw-semibold">Yarıyıl / Dönem</label>
                             <select asp-for="Yariyil" class="form-select form-select-lg rounded-3">
-                                <option value="Güz">Güz</option>
                                 <option value="Bahar">Bahar</option>
+                                <option value="Güz">Güz</option>
                                 <option value="Yaz">Yaz</option>
                             </select>
                             <span asp-validation-for="Yariyil" class="text-danger small"></span>
                         </div>
                     </div>
 
+                    <!-- Staj Başlangıç ve Bitiş Tarihleri -->
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label asp-for="StajBaslangicTarihi" class="form-label fw-semibold">Staj Başlangıç Tarihi</label>
-                            <input asp-for="StajBaslangicTarihi" type="date" class="form-control form-control-lg rounded-3" />
+                            <input asp-for="StajBaslangicTarihi" type="date" class="form-control form-control-lg rounded-3" required />
                             <span asp-validation-for="StajBaslangicTarihi" class="text-danger small"></span>
-                            <small class="text-muted d-block mt-1">Belge en az 30 gün önce yüklenmelidir.</small>
+                            <small class="text-muted d-block mt-1">Belge stajdan en az 30 gün önce yüklenmelidir.</small>
                         </div>
                         <div class="col-md-6">
                             <label asp-for="StajBitisTarihi" class="form-label fw-semibold">Staj Bitiş Tarihi</label>
-                            <input asp-for="StajBitisTarihi" type="date" class="form-control form-control-lg rounded-3" />
+                            <input asp-for="StajBitisTarihi" type="date" class="form-control form-control-lg rounded-3" required />
                             <span asp-validation-for="StajBitisTarihi" class="text-danger small"></span>
-                            <small class="text-muted d-block mt-1">Seçilen resmi tatiller hesaptan düşülecektir.</small>
+                            <small class="text-muted d-block mt-1">Resmi tatiller hesaptan otomatik düşülecektir.</small>
                         </div>
                     </div>
 
+                    <!-- Haftalık Günler -->
                     <div class="mb-4">
                         <label class="form-label fw-semibold d-block">Staj Yapılacak Haftalık Günler</label>
                         <div class="d-flex flex-wrap gap-3 p-3 bg-light rounded-3">
@@ -78,9 +82,35 @@
                         <span asp-validation-for="SecilenGunler" class="text-danger small"></span>
                     </div>
 
+                    <!-- Mühendis Sayısı ve Mezuniyet Bölümü Kuralı -->
+                    <div class="row g-3 mb-4 p-3 border rounded-3 bg-light">
+                        <div class="col-md-6">
+                            <label asp-for="MuhendisSayisi" class="form-label fw-semibold">Kurumdaki Mühendis Sayısı</label>
+                            <input asp-for="MuhendisSayisi" id="muhendisSayisiInput" type="number" min="1" class="form-control form-control-lg rounded-3" required />
+                            <span asp-validation-for="MuhendisSayisi" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6" id="mezuniyetKutusu">
+                            <label asp-for="MuhendisMezuniyetBolumu" class="form-label fw-semibold">Mühendisin Mezun Olduğu Bölüm</label>
+                            <input asp-for="MuhendisMezuniyetBolumu" id="mezuniyetInput" class="form-control form-control-lg rounded-3" placeholder="Örn: Bilgisayar Mühendisliği" />
+                            <span asp-validation-for="MuhendisMezuniyetBolumu" class="text-danger small"></span>
+                            <small class="text-warning fw-semibold d-block mt-1" id="muhendisUyariMetni">
+                                ⚠️ Mühendis sayısı 5'in altında olduğu için lisans mezuniyet bölümü zorunludur!
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Google Form URL Alanı -->
+                    <div class="mb-4">
+                        <label asp-for="GoogleFormUrl" class="form-label fw-semibold">Staj Evrağı Teslim Google Form URL'si</label>
+                        <input asp-for="GoogleFormUrl" id="googleFormUrlInput" class="form-control form-control-lg rounded-3" placeholder="https://forms.gle/... veya https://docs.google.com/forms/..." />
+                        <span asp-validation-for="GoogleFormUrl" class="text-danger small"></span>
+                        <small class="text-muted d-block mt-1">Google Form teslim linkinizi giriniz.</small>
+                    </div>
+
+                    <!-- Gönder Butonu -->
                     <div class="d-grid mt-4">
                         <button type="submit" class="btn btn-success btn-lg rounded-3" style="background-color: #10B981; border: none;">
-                            Belgeyi Kaydet ve Gönder
+                            Belgeyi Kaydet ve Doğrula
                         </button>
                     </div>
 
@@ -95,4 +125,41 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        // Mühendis sayısı 5'in altına düştüğünde uyarı gösterme
+        const muhendisInput = document.getElementById('muhendisSayisiInput');
+        const mezuniyetKutusu = document.getElementById('mezuniyetKutusu');
+        const mezuniyetInput = document.getElementById('mezuniyetInput');
+        const muhendisUyariMetni = document.getElementById('muhendisUyariMetni');
+
+        function muhendisKontrol() {
+            const sayi = parseInt(muhendisInput.value, 10);
+            if (sayi < 5) {
+                mezuniyetKutusu.style.display = 'block';
+                muhendisUyariMetni.style.display = 'block';
+                mezuniyetInput.required = true;
+            } else {
+                muhendisUyariMetni.style.display = 'none';
+                mezuniyetInput.required = false;
+            }
+        }
+
+        muhendisInput.addEventListener('input', muhendisKontrol);
+        muhendisKontrol();
+
+        // Google Form URL geçerlilik pop-up kontrolü
+        document.getElementById('evrakForm').addEventListener('submit', function(e) {
+            const formUrl = document.getElementById('googleFormUrlInput').value.trim();
+            if (formUrl !== "") {
+                const urlGecerli = formUrl.startsWith("http://") || formUrl.startsWith("https://");
+                const googleFormMu = formUrl.includes("forms.gle") || formUrl.includes("docs.google.com/forms");
+                
+                if (!urlGecerli || !googleFormMu) {
+                    e.preventDefault();
+                    alert("⚠️ Geçersiz Google Form URL'si girdiniz! Lütfen geçerli bir Google Form linki giriniz (Örn: https://forms.gle/...).");
+                }
+            }
+        });
+    </script>
 }
