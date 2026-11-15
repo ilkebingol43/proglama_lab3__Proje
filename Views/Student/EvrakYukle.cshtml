@@ -10,7 +10,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
         <div>
             <h2 class="fw-bold text-dark mb-1">Ek-16 Staj Başvuru ve Kabul Formu</h2>
-            <p class="text-secondary mb-0">Lütfen belgenizdeki bilgileri forma girin ve ıslak imzalı/onaylı Ek-16 dosyasını yükleyin.</p>
+            <p class="text-secondary mb-0">Lütfen belgenizdeki bilgileri forma girin ve onaylı Ek-16 dosyasını yükleyin.</p>
         </div>
         <a href="/Student/Index" class="btn btn-outline-secondary rounded-pill px-3">
             ← Geri Dön
@@ -21,10 +21,86 @@
 
     <form id="evrakForm" asp-action="EvrakYukle" asp-controller="Student" method="post" enctype="multipart/form-data">
 
-        <!-- 1. BÖLÜM: STAJ YAPILACAK KURUM / ŞİRKET BİLGİLERİ -->
+        <!-- 1. BÖLÜM: ÖĞRENCİ BİLGİLERİ (Ek-16 Belgesi) -->
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white py-3 border-bottom">
-                <h5 class="fw-bold text-dark mb-0">🏢 1. Staj Yapılacak Kurum / İş Yeri Bilgileri</h5>
+                <h5 class="fw-bold text-dark mb-0">👤 1. Öğrenci Bilgileri (Ek-16 Üzerindeki Bilgileriniz)</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="OgrenciAdiSoyadi" class="form-label fw-semibold">Ad Soyad</label>
+                        <input asp-for="OgrenciAdiSoyadi" class="form-control form-control-lg rounded-3" placeholder="Örn: Ahmet Yılmaz" required />
+                        <span asp-validation-for="OgrenciAdiSoyadi" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="TcKimlikNo" class="form-label fw-semibold">T.C. Kimlik No</label>
+                        <input asp-for="TcKimlikNo" class="form-control form-control-lg rounded-3" maxlength="11" placeholder="11 haneli T.C. No" required />
+                        <span asp-validation-for="TcKimlikNo" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="OgrenciNo" class="form-label fw-semibold">Öğrenci Numarası</label>
+                        <input asp-for="OgrenciNo" class="form-control form-control-lg rounded-3" placeholder="Örn: 123456789" required />
+                        <span asp-validation-for="OgrenciNo" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Uyruk" class="form-label fw-semibold">Uyruk</label>
+                        <select asp-for="Uyruk" class="form-select form-select-lg rounded-3">
+                            <option value="T.C.">T.C.</option>
+                            <option value="Yabancı">Yabancı</option>
+                        </select>
+                        <span asp-validation-for="Uyruk" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="DogumTarihi" class="form-label fw-semibold">Doğum Tarihi</label>
+                        <input asp-for="DogumTarihi" type="date" class="form-control form-control-lg rounded-3" />
+                        <span asp-validation-for="DogumTarihi" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Bolum" class="form-label fw-semibold">Okuduğu Bölüm</label>
+                        <input asp-for="Bolum" class="form-control form-control-lg rounded-3" placeholder="Örn: Bilgisayar Mühendisliği" />
+                        <span asp-validation-for="Bolum" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Eposta" class="form-label fw-semibold">E-posta</label>
+                        <input asp-for="Eposta" type="email" class="form-control form-control-lg rounded-3" placeholder="Örn: ogrenci@staj.edu.tr" />
+                        <span asp-validation-for="Eposta" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="TelefonNo" class="form-label fw-semibold">Telefon No</label>
+                        <input asp-for="TelefonNo" class="form-control form-control-lg rounded-3" placeholder="Örn: 0555 123 45 67" />
+                        <span asp-validation-for="TelefonNo" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="OncekiStajGunSayisi" class="form-label fw-semibold">Önceki Staj Gün Sayısı</label>
+                        <input asp-for="OncekiStajGunSayisi" type="number" min="0" class="form-control form-control-lg rounded-3" />
+                        <span asp-validation-for="OncekiStajGunSayisi" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="SaglikYardimStatusu" class="form-label fw-semibold">Sağlık Yardımı Statüsü</label>
+                        <select asp-for="SaglikYardimStatusu" class="form-select form-select-lg rounded-3">
+                            <option value="Var">Var</option>
+                            <option value="Yok">Yok</option>
+                        </select>
+                        <span asp-validation-for="SaglikYardimStatusu" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. BÖLÜM: STAJ YAPILACAK KURUM / ŞİRKET BİLGİLERİ -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="fw-bold text-dark mb-0">🏢 2. Staj Yapılacak Kurum / İş Yeri Bilgileri</h5>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -53,10 +129,10 @@
             </div>
         </div>
 
-        <!-- 2. BÖLÜM: STAJ TARİH VE ÇALIŞMA BİLGİLERİ -->
+        <!-- 3. BÖLÜM: STAJ TARİH VE DÖNEM BİLGİLERİ -->
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white py-3 border-bottom">
-                <h5 class="fw-bold text-dark mb-0">📅 2. Staj Tarih ve Dönem Bilgileri</h5>
+                <h5 class="fw-bold text-dark mb-0">📅 3. Staj Tarih ve Dönem Bilgileri</h5>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -109,10 +185,10 @@
             </div>
         </div>
 
-        <!-- 3. BÖLÜM: EK-16 EVRAK DOSYASI VE GOOGLE FORM -->
+        <!-- 4. BÖLÜM: EK-16 EVRAK DOSYASI VE GOOGLE FORM -->
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white py-3 border-bottom">
-                <h5 class="fw-bold text-dark mb-0">📄 3. Evrak Yükleme ve Teslimat</h5>
+                <h5 class="fw-bold text-dark mb-0">📄 4. Evrak Yükleme ve Teslimat</h5>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -170,7 +246,7 @@
         muhendisInput.addEventListener('input', muhendisKontrol);
         muhendisKontrol();
 
-        document.getElementById('evrakForm').addEventListener('submit', function (e) {
+        document.getElementById('evrakForm').addEventListener('submit', function(e) {
             const formUrl = document.getElementById('googleFormUrlInput').value.trim();
             if (formUrl !== "") {
                 const urlGecerli = formUrl.startsWith("http://") || formUrl.startsWith("https://");

@@ -19,7 +19,7 @@ namespace Lab3_proje.Controllers
     {
         private readonly AppDbContext _context;
 
-        // constructor metot
+        // constructor
         public StudentController(AppDbContext context)
         {
             _context = context;
@@ -47,7 +47,7 @@ namespace Lab3_proje.Controllers
 
 
 
-        // Evrak yükleme ekranını açar (Tamamlandı kontrolü ile)
+        // Evrak yükleme ekranını açar (Form alanları boş olarak açılır)
         [HttpGet]
         public async Task<IActionResult> EvrakYukle()
         {
@@ -185,6 +185,17 @@ namespace Lab3_proje.Controllers
                 }
                 catch { }
             }
+            else if (uzanti == ".doc")
+            {
+                try
+                {
+                    using (var docStream = model.BelgeDosyasi.OpenReadStream())
+                    {
+                        tarananMetin = DocMetinCikar(docStream);
+                    }
+                }
+                catch { }
+            }
             else if (uzanti == ".pdf")
             {
                 try
@@ -207,19 +218,32 @@ namespace Lab3_proje.Controllers
             if (ogrenci != null)
             {
                 string normBelge = MetinNormallestir(tarananMetin);
-
-                // 1. İsim Kontrolü (Türkçe karakter ve parça kontrolü)
-                bool isimVar = false;
-                if (!string.IsNullOrWhiteSpace(ogrenci.Name))
+                // Kullanıcının formda güncellediği bilgileri veritabanında saklama
+                if (ogrenci.OgrenciDetay != null)
                 {
-                    string normIsim = MetinNormallestir(ogrenci.Name);
+                    if (!string.IsNullOrWhiteSpace(model.TcKimlikNo)) ogrenci.OgrenciDetay.TCKimlik = model.TcKimlikNo;
+                    if (!string.IsNullOrWhiteSpace(model.TelefonNo)) ogrenci.OgrenciDetay.TelefonNumarası = model.TelefonNo;
+                    if (!string.IsNullOrWhiteSpace(model.IkametgahAdresi)) ogrenci.OgrenciDetay.IkametgahAdresi = model.IkametgahAdresi;
+                    if (!string.IsNullOrWhiteSpace(model.Uyruk)) ogrenci.OgrenciDetay.Uyruk = model.Uyruk;
+                    if (!string.IsNullOrWhiteSpace(model.Bolum)) ogrenci.OgrenciDetay.OkuduguBolum = model.Bolum;
+                    if (!string.IsNullOrWhiteSpace(model.SaglikYardimStatusu)) ogrenci.OgrenciDetay.SaglikYardimStatüsü = model.SaglikYardimStatusu;
+                    if (model.DogumTarihi.HasValue && model.DogumTarihi.Value > DateTime.MinValue) ogrenci.OgrenciDetay.DogumTarihi = model.DogumTarihi.Value;
+                    ogrenci.OgrenciDetay.OncekiStajGünSayisi = model.OncekiStajGunSayisi;
+                }
+
+                // 1. İsim Kontrolü (Kullanıcının formda girdiği Ad Soyad belgede aranır)
+                string arananIsim = !string.IsNullOrWhiteSpace(model.OgrenciAdiSoyadi) ? model.OgrenciAdiSoyadi : (ogrenci.Name ?? string.Empty);
+                bool isimVar = false;
+                if (!string.IsNullOrWhiteSpace(arananIsim))
+                {
+                    string normIsim = MetinNormallestir(arananIsim);
                     if (normBelge.Contains(normIsim))
                     {
                         isimVar = true;
                     }
                     else
                     {
-                        var parcalar = ogrenci.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        var parcalar = arananIsim.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                         if (parcalar.Length > 0 && parcalar.Any(p => normBelge.Contains(MetinNormallestir(p))))
                         {
                             isimVar = true;
@@ -229,33 +253,33 @@ namespace Lab3_proje.Controllers
 
                 if (!isimVar)
                 {
-                    uyusmazliklar.Add("Öğrenci adı belgede bulunamadı");
+                    uyusmazliklar.Add("Öğrenci adı belgedeki metinle uyuşmuyor");
                 }
 
-                // 2. Öğrenci Numarası Kontrolü
-                string ogrNo = ogrenci.OgrenciDetay?.OgrenciNo ?? ogrenci.UserName;
+                // 2. Öğrenci Numarası Kontrolü (Kullanıcının formda girdiği Numara belgede aranır)
+                string arananNo = !string.IsNullOrWhiteSpace(model.OgrenciNo) ? model.OgrenciNo : (ogrenci.OgrenciDetay?.OgrenciNo ?? ogrenci.UserName ?? string.Empty);
                 bool noVar = false;
-                if (!string.IsNullOrWhiteSpace(ogrNo))
+                if (!string.IsNullOrWhiteSpace(arananNo))
                 {
-                    string normNo = MetinNormallestir(ogrNo);
-                    if (normBelge.Contains(normNo) || tarananMetin.Contains(ogrNo))
+                    string normNo = MetinNormallestir(arananNo);
+                    if (normBelge.Contains(normNo) || tarananMetin.Contains(arananNo.Trim()))
                     {
                         noVar = true;
-                    }
-                }
-                // 4. Kurum / Firma Adı Kontrolü (Opsiyonel Çapraz Doğrulama)
-                if (!string.IsNullOrWhiteSpace(model.KurumAdi))
-                {
-                    string normKurum = MetinNormallestir(model.KurumAdi);
-                    if (!normBelge.Contains(normKurum) && !tarananMetin.Contains(model.KurumAdi.Trim()))
-                    {
-                        // Belgede kurum adı aranır, bulunamazsa raporda detay olarak belirtilir
                     }
                 }
 
                 if (!noVar)
                 {
-                    uyusmazliklar.Add("Öğrenci numarası belgede bulunamadı");
+                    uyusmazliklar.Add("Öğrenci numarası belgedeki metinle uyuşmuyor");
+                }
+
+                // T.C. Kimlik No Kontrolü (Opsiyonel)
+                if (!string.IsNullOrWhiteSpace(model.TcKimlikNo) && model.TcKimlikNo.Length == 11)
+                {
+                    if (normBelge.Contains(model.TcKimlikNo) || tarananMetin.Contains(model.TcKimlikNo))
+                    {
+                        // Belgede T.C. Kimlik No tespit edildi
+                    }
                 }
 
                 // 3. Staj Başlangıç Tarihi veya Yılı Kontrolü
@@ -269,6 +293,28 @@ namespace Lab3_proje.Controllers
                 if (!tarihVar)
                 {
                     uyusmazliklar.Add("Staj başlangıç tarihi belgede bulunamadı");
+                }
+
+                // 4. Kurum / Firma Adı Kontrolü (Çapraz Doğrulama)
+                if (!string.IsNullOrWhiteSpace(model.KurumAdi))
+                {
+                    string normKurum = MetinNormallestir(model.KurumAdi);
+                    bool kurumVar = normBelge.Contains(normKurum) || tarananMetin.Contains(model.KurumAdi.Trim());
+
+                    if (!kurumVar)
+                    {
+                        // Kelime bazlı kontrol (örn: ASELSAN A.Ş. yazıldığında ASELSAN kelimesini belgede bulabilmesi için)
+                        var kurumKelimeleri = model.KurumAdi.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        if (kurumKelimeleri.Any(k => k.Length >= 3 && normBelge.Contains(MetinNormallestir(k))))
+                        {
+                            kurumVar = true;
+                        }
+                    }
+
+                    if (!kurumVar)
+                    {
+                        uyusmazliklar.Add("Kurum / Firma adı belgede bulunamadı");
+                    }
                 }
             }
 
@@ -438,6 +484,59 @@ namespace Lab3_proje.Controllers
                         }
                     }
                     sb.Append(' ');
+                }
+            }
+            catch { }
+            return sb.ToString();
+        }
+
+        // Word 97-2003 (.doc) ikili dosya ve alternatif formatlardan metin çıkarma
+        private static string DocMetinCikar(Stream stream)
+        {
+            var sb = new System.Text.StringBuilder();
+            try
+            {
+                using var ms = new MemoryStream();
+                stream.CopyTo(ms);
+                byte[] bytes = ms.ToArray();
+
+                if (bytes.Length == 0) return string.Empty;
+
+                // 1. Dosya aslında ZIP tabanlı DOCX ise (PK\x03\x04 ile başlar)
+                if (bytes.Length > 4 && bytes[0] == 0x50 && bytes[1] == 0x4B && bytes[2] == 0x03 && bytes[3] == 0x04)
+                {
+                    ms.Position = 0;
+                    using var archive = new System.IO.Compression.ZipArchive(ms, System.IO.Compression.ZipArchiveMode.Read);
+                    var entry = archive.GetEntry("word/document.xml");
+                    if (entry != null)
+                    {
+                        using var reader = new StreamReader(entry.Open());
+                        string xml = reader.ReadToEnd();
+                        return System.Text.RegularExpressions.Regex.Replace(xml, "<.*?>", " ");
+                    }
+                }
+
+                // 2. Word 97-2003 OLE2 (.doc) dosyalarındaki UTF-16LE metin blokları
+                string unicodeMetin = System.Text.Encoding.Unicode.GetString(bytes);
+                var unicodeKelimeler = System.Text.RegularExpressions.Regex.Matches(unicodeMetin, @"[\p{L}\p{N}\.\:\/\-]{2,}");
+                foreach (System.Text.RegularExpressions.Match m in unicodeKelimeler)
+                {
+                    sb.Append(m.Value).Append(' ');
+                }
+
+                // 3. Tek baytlık ANSI (Windows-1254 / Latin-1) ve UTF-8 metin blokları
+                string latinMetin = System.Text.Encoding.Latin1.GetString(bytes);
+                var latinKelimeler = System.Text.RegularExpressions.Regex.Matches(latinMetin, @"[\p{L}\p{N}\.\:\/\-]{3,}");
+                foreach (System.Text.RegularExpressions.Match m in latinKelimeler)
+                {
+                    sb.Append(m.Value).Append(' ');
+                }
+
+                string utf8Metin = System.Text.Encoding.UTF8.GetString(bytes);
+                var utf8Kelimeler = System.Text.RegularExpressions.Regex.Matches(utf8Metin, @"[\p{L}\p{N}\.\:\/\-]{3,}");
+                foreach (System.Text.RegularExpressions.Match m in utf8Kelimeler)
+                {
+                    sb.Append(m.Value).Append(' ');
                 }
             }
             catch { }
