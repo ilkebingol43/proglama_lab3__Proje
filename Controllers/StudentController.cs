@@ -19,7 +19,7 @@ namespace Lab3_proje.Controllers
     {
         private readonly AppDbContext _context;
 
-        // constructor metot
+        // constructor
         public StudentController(AppDbContext context)
         {
             _context = context;
@@ -47,7 +47,7 @@ namespace Lab3_proje.Controllers
 
 
 
-        // Evrak yükleme ekranını açar (Tamamlandı kontrolü ile)
+        // Evrak yükleme ekranını açar (Form alanları boş olarak açılır)
         [HttpGet]
         public async Task<IActionResult> EvrakYukle()
         {
@@ -218,19 +218,32 @@ namespace Lab3_proje.Controllers
             if (ogrenci != null)
             {
                 string normBelge = MetinNormallestir(tarananMetin);
-
-                // 1. İsim Kontrolü (Türkçe karakter ve parça kontrolü)
-                bool isimVar = false;
-                if (!string.IsNullOrWhiteSpace(ogrenci.Name))
+                // Kullanıcının formda güncellediği bilgileri veritabanında saklama
+                if (ogrenci.OgrenciDetay != null)
                 {
-                    string normIsim = MetinNormallestir(ogrenci.Name);
+                    if (!string.IsNullOrWhiteSpace(model.TcKimlikNo)) ogrenci.OgrenciDetay.TCKimlik = model.TcKimlikNo;
+                    if (!string.IsNullOrWhiteSpace(model.TelefonNo)) ogrenci.OgrenciDetay.TelefonNumarası = model.TelefonNo;
+                    if (!string.IsNullOrWhiteSpace(model.IkametgahAdresi)) ogrenci.OgrenciDetay.IkametgahAdresi = model.IkametgahAdresi;
+                    if (!string.IsNullOrWhiteSpace(model.Uyruk)) ogrenci.OgrenciDetay.Uyruk = model.Uyruk;
+                    if (!string.IsNullOrWhiteSpace(model.Bolum)) ogrenci.OgrenciDetay.OkuduguBolum = model.Bolum;
+                    if (!string.IsNullOrWhiteSpace(model.SaglikYardimStatusu)) ogrenci.OgrenciDetay.SaglikYardimStatüsü = model.SaglikYardimStatusu;
+                    if (model.DogumTarihi.HasValue && model.DogumTarihi.Value > DateTime.MinValue) ogrenci.OgrenciDetay.DogumTarihi = model.DogumTarihi.Value;
+                    ogrenci.OgrenciDetay.OncekiStajGünSayisi = model.OncekiStajGunSayisi;
+                }
+
+                // 1. İsim Kontrolü (Kullanıcının formda girdiği Ad Soyad belgede aranır)
+                string arananIsim = !string.IsNullOrWhiteSpace(model.OgrenciAdiSoyadi) ? model.OgrenciAdiSoyadi : (ogrenci.Name ?? string.Empty);
+                bool isimVar = false;
+                if (!string.IsNullOrWhiteSpace(arananIsim))
+                {
+                    string normIsim = MetinNormallestir(arananIsim);
                     if (normBelge.Contains(normIsim))
                     {
                         isimVar = true;
                     }
                     else
                     {
-                        var parcalar = ogrenci.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        var parcalar = arananIsim.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                         if (parcalar.Length > 0 && parcalar.Any(p => normBelge.Contains(MetinNormallestir(p))))
                         {
                             isimVar = true;
@@ -240,16 +253,16 @@ namespace Lab3_proje.Controllers
 
                 if (!isimVar)
                 {
-                    uyusmazliklar.Add("Öğrenci adı belgede bulunamadı");
+                    uyusmazliklar.Add("Öğrenci adı belgedeki metinle uyuşmuyor");
                 }
 
-                // 2. Öğrenci Numarası Kontrolü
-                string ogrNo = ogrenci.OgrenciDetay?.OgrenciNo ?? ogrenci.UserName;
+                // 2. Öğrenci Numarası Kontrolü (Kullanıcının formda girdiği Numara belgede aranır)
+                string arananNo = !string.IsNullOrWhiteSpace(model.OgrenciNo) ? model.OgrenciNo : (ogrenci.OgrenciDetay?.OgrenciNo ?? ogrenci.UserName ?? string.Empty);
                 bool noVar = false;
-                if (!string.IsNullOrWhiteSpace(ogrNo))
+                if (!string.IsNullOrWhiteSpace(arananNo))
                 {
-                    string normNo = MetinNormallestir(ogrNo);
-                    if (normBelge.Contains(normNo) || tarananMetin.Contains(ogrNo))
+                    string normNo = MetinNormallestir(arananNo);
+                    if (normBelge.Contains(normNo) || tarananMetin.Contains(arananNo.Trim()))
                     {
                         noVar = true;
                     }
@@ -257,7 +270,16 @@ namespace Lab3_proje.Controllers
 
                 if (!noVar)
                 {
-                    uyusmazliklar.Add("Öğrenci numarası belgede bulunamadı");
+                    uyusmazliklar.Add("Öğrenci numarası belgedeki metinle uyuşmuyor");
+                }
+
+                // T.C. Kimlik No Kontrolü (Opsiyonel)
+                if (!string.IsNullOrWhiteSpace(model.TcKimlikNo) && model.TcKimlikNo.Length == 11)
+                {
+                    if (normBelge.Contains(model.TcKimlikNo) || tarananMetin.Contains(model.TcKimlikNo))
+                    {
+                        // Belgede T.C. Kimlik No tespit edildi
+                    }
                 }
 
                 // 3. Staj Başlangıç Tarihi veya Yılı Kontrolü
